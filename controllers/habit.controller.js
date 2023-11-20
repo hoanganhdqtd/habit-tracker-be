@@ -1,3 +1,4 @@
+const dayjs = require("dayjs");
 const { catchAsync, sendResponse, AppError } = require("../helpers/utils");
 
 const Habit = require("../models/Habit");
@@ -46,6 +47,14 @@ habitController.createHabit = catchAsync(async (req, res, next) => {
     // reminders: habitReminders,
   });
 
+  if (onWeekdays && onWeekdays.length) {
+    console.log("onWeekdays:", onWeekdays);
+    habit.onWeekdays = onWeekdays.sort((a, b) => a - b);
+  } else {
+    habit.onWeekdays = Array.from({ length: 7 }, (value, index) => index);
+  }
+  await habit.save();
+
   // Send response
   return sendResponse(res, 200, true, habit, null, "Create Habit success");
 });
@@ -64,12 +73,37 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
   page = parseInt(page) || 1;
   limit = parseInt(limit) || 10;
   search = search || "";
+  let nextDate;
 
   const filterConditions = [
     { user: currentUserId },
     { name: { $regex: search } },
-    {},
+    // { startDate: { $lte: date } },
   ];
+
+  if (date) {
+    // date = new Date(date);
+
+    nextDate = new Date(date);
+    nextDate.setDate(nextDate.getDate() + 1);
+
+    date = dayjs(date)
+      .set("hour", 0)
+      .set("minute", 0)
+      .set("second", 0)
+      .set("millisecond", 0);
+
+    const weekday = date.get("day");
+
+    nextDate = dayjs(nextDate)
+      .set("hour", 0)
+      .set("minute", 0)
+      .set("second", 0)
+      .set("millisecond", 0);
+
+    filterConditions.push({ startDate: { $lte: date } });
+    filterConditions.push({ onWeekdays: weekday });
+  }
 
   const filterCriteria = filterConditions.length
     ? { $and: filterConditions }
@@ -136,22 +170,72 @@ habitController.updateSingleHabit = catchAsync(async (req, res, next) => {
     );
   }
 
+  console.log("updateSingleHabit be");
+
   // Process
-  const allows = [
-    "name",
-    "description",
-    "goal",
-    "startDate",
-    "duration",
-    "progress",
-    "onWeekdays",
-    "reminders",
-  ];
-  allows.forEach((field) => {
-    if (req.body[field] !== undefined) {
-      habit[field] = req.body[field];
-    }
-  });
+  // const allows = [
+  //   "name",
+  //   "description",
+  //   "goal",
+  //   "startDate",
+  //   "duration",
+  //   "progress",
+  //   "onWeekdays",
+  //   "reminders",
+  // ];
+
+  // allows.forEach((field) => {
+  //   console.log(`188 req.body.${field}: ${req.body[field]}`);
+  //   if (!req.body[field]) {
+  //     req.body[field] = habit[field];
+  //   }
+  //   console.log(`192 req.body.${field}: ${req.body[field]}`);
+  // });
+
+  // console.log("195 req.body:", req.body);
+
+  // allows.forEach((field) => {
+  //   if (req.body[field] !== undefined) {
+  //     console.log(`199 req.body.${field}: ${req.body[field]}`);
+  //     if (["onWeekdays", "progress", "reminders"].includes(field)) {
+  //       if (!req.body[field].length) {
+  //         console.log(`214 habit.${field}: ${habit[field]}`);
+  //         req.body[field] = habit[field];
+  //       }
+  //     }
+  //   }
+  //   habit[field] = req.body[field];
+  // });
+  // console.log(`209 habit: ${habit}`);
+
+  console.log("211 req.body:", req.body);
+  const { name, description, goal, duration, progress, onWeekdays, reminders } =
+    req.body;
+
+  if (name) {
+    habit.name = name;
+  }
+
+  if (description) {
+    habit.description = description;
+  }
+
+  if (goal) {
+    habit.goal = goal;
+  }
+
+  if (duration) {
+    habit.duration = duration;
+  }
+
+  if (progress) {
+    habit.progress = progress;
+  }
+
+  if (onWeekdays && onWeekdays.length) {
+    habit.onWeekdays = onWeekdays.sort((a, b) => a - b);
+  }
+
   await habit.save();
 
   // Send response

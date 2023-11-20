@@ -20,7 +20,7 @@ const habitSchema = Schema(
       },
     ],
     duration: { type: Number, required: true },
-    onWeekdays: { type: Number, min: 0, max: 6 },
+    onWeekdays: [{ type: Number, min: 0, max: 6 }],
     reminders: [
       {
         type: Schema.Types.ObjectId,
