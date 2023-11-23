@@ -138,7 +138,8 @@ habitController.getSingleHabit = catchAsync(async (req, res, next) => {
   const currentUserId = req.userId;
 
   // Validation
-  let habit = await Habit.findById(habitId);
+  // let habit = await Habit.findById(habitId);
+  let habit = await Habit.findById(habitId).populate("reminders").exec();
   if (!habit) {
     throw new AppError(400, "Habit not found", "Get Single Habit error");
   }
