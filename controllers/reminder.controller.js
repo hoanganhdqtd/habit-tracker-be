@@ -44,6 +44,31 @@ reminderController.createHabitReminder = catchAsync(async (req, res, next) => {
   return sendResponse(res, 200, true, habit, null, "Create Reminder success");
 });
 
+// Get a reminder by Id
+// GET /reminders/:reminderId
+reminderController.getSingleReminder = catchAsync(async (req, res, next) => {
+  // Get data
+  const reminderId = req.params.reminderId;
+
+  // Validation
+
+  // Processing
+  let reminder = await Reminder.findById(reminderId);
+  if (!reminder) {
+    throw new AppError(400, "Reminder not found", "Get Single Reminder error");
+  }
+
+  // Send response
+  return sendResponse(
+    res,
+    200,
+    true,
+    reminder,
+    null,
+    "Get Single Reminder success"
+  );
+});
+
 // Update a reminder
 // PUT /reminders/:reminderId
 reminderController.updateHabitReminder = catchAsync(async (req, res, next) => {
@@ -105,6 +130,9 @@ reminderController.deleteHabitSingleReminder = catchAsync(
 
     // Process
     let reminder = await Reminder.findByIdAndDelete(reminderId);
+    habit.reminders = habit.reminders.filter(
+      (elementId) => elementId !== reminderId
+    );
 
     if (!reminder) {
       throw new AppError(

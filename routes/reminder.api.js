@@ -28,6 +28,20 @@ router.post(
 );
 
 /**
+ * @route GET /reminders/:reminderId
+ * @description Get a reminder with reminderId
+ * @access Login required
+ */
+router.get(
+  "/:reminderId",
+  authentication.loginRequired,
+  validators.validate([
+    param("reminderId").exists().isString().custom(validators.checkObjectId),
+  ]),
+  reminderController.getSingleReminder
+);
+
+/**
  * @route PUT /reminders/:reminderId
  * @description Update a reminder for a habit
  * @body { reminderFrequency, onWeekdays, time, status }
