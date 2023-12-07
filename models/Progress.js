@@ -6,7 +6,7 @@ const progressSchema = Schema(
   {
     status: {
       type: String,
-      enum: ["completed", "incomplete", "missed"],
+      enum: ["completed", "incomplete"],
       required: true,
     },
     duration: { type: Number, required: true },
