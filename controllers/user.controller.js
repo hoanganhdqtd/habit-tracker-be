@@ -67,12 +67,12 @@ userController.updateProfile = catchAsync(async (req, res, next) => {
   // check if the current user is allowed to update profile
   // admin || currentUserId === userId
   // if (currentUserId !== userId) {
-  //   throw new AppError(400, "Permission required", "Update User Error");
+  //   throw new AppError(400, "Permission required", "Update Profile Error");
   // }
 
   let user = await User.findById(currentUserId);
   if (!user) {
-    throw new AppError(400, "User not found", "Update User error");
+    throw new AppError(400, "User not found", "Update Profile error");
   }
 
   // Process
@@ -87,7 +87,7 @@ userController.updateProfile = catchAsync(async (req, res, next) => {
   await user.save();
 
   // Response
-  return sendResponse(res, 200, true, user, null, "Update User success");
+  return sendResponse(res, 200, true, user, null, "Update Profile success");
 });
 
 module.exports = userController;
