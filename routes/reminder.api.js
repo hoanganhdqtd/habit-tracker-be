@@ -53,7 +53,7 @@ router.get(
 //   validators.validate([
 //     param("id").exists().isString().custom(validators.checkObjectId),
 //   ]),
-//   reminderController.updateHabitReminder
+//   reminderController.updateSingleReminder
 // );
 // router.put(
 //   "/habit/:habitId/reminder/:reminderId",
@@ -62,7 +62,7 @@ router.get(
 //     param("habitId").exists().isString().custom(validators.checkObjectId),
 //     param("reminderId").exists().isString().custom(validators.checkObjectId),
 //   ]),
-//   reminderController.updateHabitReminder
+//   reminderController.updateSingleReminder
 // );
 router.put(
   "/:reminderId",
@@ -70,7 +70,7 @@ router.put(
   validators.validate([
     param("reminderId").exists().isString().custom(validators.checkObjectId),
   ]),
-  reminderController.updateHabitReminder
+  reminderController.updateSingleReminder
 );
 
 /**

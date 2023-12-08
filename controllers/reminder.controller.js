@@ -71,7 +71,7 @@ reminderController.getSingleReminder = catchAsync(async (req, res, next) => {
 
 // Update a reminder
 // PUT /reminders/:reminderId
-reminderController.updateHabitReminder = catchAsync(async (req, res, next) => {
+reminderController.updateSingleReminder = catchAsync(async (req, res, next) => {
   // Get data
   const { reminderId } = req.params;
 
@@ -101,7 +101,7 @@ reminderController.updateHabitReminder = catchAsync(async (req, res, next) => {
     true,
     reminder,
     null,
-    "Update Reminder success"
+    "Update Single Reminder success"
   );
 });
 
@@ -115,7 +115,11 @@ reminderController.deleteHabitSingleReminder = catchAsync(
     // Validation
     let habit = await Habit.findById(habitId);
     if (!habit) {
-      throw new AppError(400, "Habit not found", "Delete Habit Reminder error");
+      throw new AppError(
+        400,
+        "Habit not found",
+        "Delete Habit Single Reminder error"
+      );
     }
 
     const reminderIndex = habit.reminders.indexOf(reminderId);
@@ -124,26 +128,27 @@ reminderController.deleteHabitSingleReminder = catchAsync(
       throw new AppError(
         400,
         "Reminder not found",
-        "Delete Habit Reminder error"
+        "Delete Habit Single Reminder error"
       );
     }
 
     // Process
     let reminder = await Reminder.findByIdAndDelete(reminderId);
-    habit.reminders = habit.reminders.filter(
-      (elementId) => elementId !== reminderId
-    );
 
     if (!reminder) {
       throw new AppError(
         400,
         "Reminder not found",
-        "Delete Habit Reminder error"
+        "Delete Habit Single Reminder error"
       );
     }
 
+    habit.reminders = habit.reminders.filter(
+      (elementId) => elementId !== reminderId
+    );
+
     // remove reminderId from habit's reminders array
-    habit.reminders.splice(reminderIndex, 1);
+    // habit.reminders.splice(reminderIndex, 1);
     await habit.save();
 
     // Send response
@@ -153,7 +158,7 @@ reminderController.deleteHabitSingleReminder = catchAsync(
       true,
       reminder,
       null,
-      "Delete Habit Reminder success"
+      "Delete Habit Single Reminder success"
     );
   }
 );

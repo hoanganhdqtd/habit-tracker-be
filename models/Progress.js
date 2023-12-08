@@ -10,7 +10,7 @@ const progressSchema = Schema(
       required: true,
     },
     duration: { type: Number, required: true },
-    progressValue: { type: Number, required: true },
+    // progressValue: { type: Number, required: true },
     date: { type: Date, required: true },
   },
   { timestamps: true }
