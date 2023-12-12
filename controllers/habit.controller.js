@@ -48,7 +48,7 @@ habitController.createHabit = catchAsync(async (req, res, next) => {
   });
 
   if (onWeekdays && onWeekdays.length) {
-    console.log("onWeekdays:", onWeekdays);
+    // console.log("onWeekdays:", onWeekdays);
     habit.onWeekdays = onWeekdays.sort((a, b) => a - b);
   } else {
     habit.onWeekdays = Array.from({ length: 7 }, (value, index) => index);
@@ -171,7 +171,7 @@ habitController.updateSingleHabit = catchAsync(async (req, res, next) => {
     );
   }
 
-  console.log("updateSingleHabit be");
+  // console.log("updateSingleHabit be");
 
   // Process
   // const allows = [
@@ -209,7 +209,6 @@ habitController.updateSingleHabit = catchAsync(async (req, res, next) => {
   // });
   // console.log(`209 habit: ${habit}`);
 
-  console.log("211 req.body:", req.body);
   const { name, description, goal, duration, progress, onWeekdays, reminders } =
     req.body;
 

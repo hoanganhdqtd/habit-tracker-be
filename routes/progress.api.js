@@ -9,8 +9,23 @@ const validators = require("../middlewares/validators");
 const authentication = require("../middlewares/authentication");
 
 /**
+ * @route POST progress/habit/:habitId
+ * @description Create a new daily progress for a specific habit with habitId
+ * with { status, date }
+ * @access Login required
+ */
+router.post(
+  "/habit/:habitId",
+  authentication.loginRequired,
+  validators.validate([
+    param("habitId").exists().isString().custom(validators.checkObjectId),
+  ]),
+  progressController.createNewDailyProgress
+);
+
+/**
  * @route GET progress/habit/:habitId
- * @description Get progress of a specific habit with habitId
+ * @description Get progress list of a specific habit with habitId
  * @access Login required
  */
 router.get(
@@ -24,7 +39,8 @@ router.get(
 
 /**
  * @route PUT progress/habit/:habitId
- * @description Update progress of a specific habit with habitId by {status, duration, progressValue, time}
+ * @description Add new progress to the progress list of a habit
+ * with habitId by {status, date}
  * @access Login required
  */
 router.put(
@@ -33,7 +49,22 @@ router.put(
   validators.validate([
     param("habitId").exists().isString().custom(validators.checkObjectId),
   ]),
-  progressController.updateHabitProgress
+  progressController.addHabitProgress
+);
+
+/**
+ * @route PUT progress/:progressId/habit/:habitId
+ * @description Update a daily progress
+ * @access Login required
+ */
+router.put(
+  "/:progressId/habit/:habitId",
+  authentication.loginRequired,
+  validators.validate([
+    param("progressId").exists().isString().custom(validators.checkObjectId),
+    param("habitId").exists().isString().custom(validators.checkObjectId),
+  ]),
+  progressController.updateDailyProgress
 );
 
 module.exports = router;

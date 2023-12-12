@@ -9,7 +9,7 @@ const progressSchema = Schema(
       enum: ["completed", "incomplete"],
       required: true,
     },
-    duration: { type: Number, required: true },
+    // duration: { type: Number, required: true },
     // progressValue: { type: Number, required: true },
     date: { type: Date, required: true },
   },
