@@ -79,9 +79,12 @@ reminderController.updateSingleReminder = catchAsync(async (req, res, next) => {
 
   // Process
   let reminder = await Reminder.findById(reminderId);
-  const { reminderFrequency, time, onWeekdays, status } = req.body;
+  const { reminderFrequency, time, startDate, onWeekdays, status } = req.body;
   if (reminderFrequency) {
     reminder.reminderFrequency = reminderFrequency;
+  }
+  if (startDate) {
+    reminder.startDate = startDate;
   }
   if (time) {
     reminder.time = time;
