@@ -29,40 +29,7 @@ progressController.getHabitProgress = catchAsync(async (req, res, next) => {
   );
 });
 
-// Add new progress to the progress list of a habit
-// PUT progress/habit/:habitId
-progressController.addHabitProgress = catchAsync(async (req, res, next) => {
-  // Get data
-  const habitId = req.params.habitId;
-
-  // Validation
-  const habit = await Habit.findById(habitId);
-  if (!habit) {
-    throw new AppError(400, "Habit not found", "Add Habit Progress error");
-  }
-
-  // Process
-  // const { status, duration, progressValue, time } = req.body;
-  const { status, date } = req.body;
-  const newProgress = await Progress.create({
-    status,
-    date,
-  });
-  habit.progress.push(newProgress._id);
-  await habit.save();
-
-  // Send response
-  sendResponse(
-    res,
-    200,
-    true,
-    { habit: habitId, progress: habit.progress },
-    null,
-    "Update Habit Progress success"
-  );
-});
-
-// Create new daily progress
+// Create new daily progress and add to the habit's progress list
 // POST progress/habit/:habitId
 progressController.createNewDailyProgress = catchAsync(
   async (req, res, next) => {
@@ -81,6 +48,7 @@ progressController.createNewDailyProgress = catchAsync(
       status,
       date,
       // habitId
+      habit: habitId,
     });
 
     habit.progress.push(newProgress._id);
@@ -100,14 +68,33 @@ progressController.createNewDailyProgress = catchAsync(
 );
 
 // Update daily progress
+// PUT progress/:progressId/habit/:habitId
+// PUT progress/habit/:habitId
 progressController.updateDailyProgress = catchAsync(async (req, res, next) => {
   // Get data
-  const { progressId } = req.params;
+  // const { progressId, habitId } = req.params;
+  const { habitId } = req.params;
+  const { date, status } = req.body;
 
   // const habitId = req.params.habitId;
 
   // Validation
-  let progress = await Progress.findById(progressId);
+  // let progress = await Progress.findById(progressId);
+  let progress = await Progress.findOne({ habit: habitId, date });
+
+  // let progress = await Progress.updateOne(
+  //   { _id: progressId },
+  //   { $set: { status } }
+  // );
+
+  // let progress = await Progress.updateOne(
+  //   { habit: habitId, date },
+  //   { $set: { status } }
+  // );
+
+  // progress.status = status;
+  // await progress.save();
+
   if (!progress) {
     throw new AppError(
       400,
@@ -117,7 +104,7 @@ progressController.updateDailyProgress = catchAsync(async (req, res, next) => {
   }
 
   // Process
-  const { date, status } = req.body;
+
   progress.status = status;
 
   await progress.save();
