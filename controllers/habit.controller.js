@@ -47,6 +47,10 @@ habitController.createHabit = catchAsync(async (req, res, next) => {
     // reminders: habitReminders,
   });
 
+  if (description) {
+    habit.description = description;
+  }
+
   if (onWeekdays && onWeekdays.length) {
     // console.log("onWeekdays:", onWeekdays);
     habit.onWeekdays = onWeekdays.sort((a, b) => a - b);
@@ -139,7 +143,10 @@ habitController.getSingleHabit = catchAsync(async (req, res, next) => {
 
   // Validation
   // let habit = await Habit.findById(habitId);
-  let habit = await Habit.findById(habitId).populate("reminders").exec();
+  let habit = await Habit.findById(habitId)
+    .populate("reminders")
+    .populate("progress")
+    .exec();
   if (!habit) {
     throw new AppError(400, "Habit not found", "Get Single Habit error");
   }

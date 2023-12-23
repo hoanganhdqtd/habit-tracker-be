@@ -3,9 +3,9 @@ const router = express.Router();
 
 const { body } = require("express-validator");
 
-const authController = require("../controllers/auth.controller");
-
 const validators = require("../middlewares/validators");
+
+const authController = require("../controllers/auth.controller");
 
 /**
  * @route POST /auth/login

@@ -3,15 +3,15 @@ const router = express.Router();
 
 const { body, param } = require("express-validator");
 
-const habitController = require("../controllers/habit.controller");
-
 const authentication = require("../middlewares/authentication");
 const validators = require("../middlewares/validators");
+
+const habitController = require("../controllers/habit.controller");
 
 /**
  * @route POST /habits
  * @description create a new habit
- * @body {  }
+ * @body { name, description, goal, startDate, duration, onWeekdays }
  * @access Public
  */
 
@@ -53,7 +53,7 @@ router.get(
 /**
  * @route PUT /habits/:id
  * @description update a specific habit
- * @body { name, description, goal, startDate, progress, duration, weekdays, reminders }
+ * @body { name, description, goal, startDate, duration, onWeekdays }
  * @access Login required
  */
 router.put(

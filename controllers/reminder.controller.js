@@ -1,3 +1,4 @@
+const nodemailer = require("nodemailer");
 const { catchAsync, sendResponse, AppError } = require("../helpers/utils");
 
 const Habit = require("../models/Habit");
@@ -10,28 +11,39 @@ const reminderController = {};
 reminderController.createHabitReminder = catchAsync(async (req, res, next) => {
   // Get data
   const habitId = req.params.habitId;
-  const { reminderFrequency, time, onWeekdays, startDate, status } = req.body;
+  // const { reminderFrequency, time, onWeekdays, startDate, status } = req.body;
+  const { time, onWeekdays, startDate, status } = req.body;
 
   // Validation
 
   // Process
   const newReminder = await Reminder.create({
-    reminderFrequency,
+    // reminderFrequency,
     time,
     // onWeekdays,
     startDate,
     status,
   });
 
-  if (onWeekdays) {
-    newReminder.onWeekdays = onWeekdays;
-    await newReminder.save();
+  // check if onWeekdays is input by the user
+  if (onWeekdays && onWeekdays.length) {
+    // console.log("onWeekdays:", onWeekdays);
+    newReminder.onWeekdays = onWeekdays.sort((a, b) => a - b);
+  } else {
+    newReminder.onWeekdays = Array.from({ length: 7 }, (value, index) => index);
   }
 
-  if (status) {
-    newReminder.status = status;
-    await newReminder.save();
-  }
+  await newReminder.save();
+
+  // if (onWeekdays) {
+  //   newReminder.onWeekdays = onWeekdays;
+  //   await newReminder.save();
+  // }
+
+  // if (status) {
+  //   newReminder.status = status;
+  //   await newReminder.save();
+  // }
 
   let habit = await Habit.findById(habitId);
 
@@ -79,10 +91,11 @@ reminderController.updateSingleReminder = catchAsync(async (req, res, next) => {
 
   // Process
   let reminder = await Reminder.findById(reminderId);
-  const { reminderFrequency, time, startDate, onWeekdays, status } = req.body;
-  if (reminderFrequency) {
-    reminder.reminderFrequency = reminderFrequency;
-  }
+  // const { reminderFrequency, time, startDate, onWeekdays, status } = req.body;
+  const { time, startDate, onWeekdays, status } = req.body;
+  // if (reminderFrequency) {
+  //   reminder.reminderFrequency = reminderFrequency;
+  // }
   if (startDate) {
     reminder.startDate = startDate;
   }
@@ -193,5 +206,15 @@ reminderController.deleteHabitAllReminders = catchAsync(
     );
   }
 );
+
+// Send email notifications for a reminder
+// POST /reminders/:reminderId/mail
+reminderController.sendNotification = catchAsync(async (req, res, next) => {
+  // Get data
+  const { reminderId } = req.params;
+  // Validation
+  // Process
+  // Send response
+});
 
 module.exports = reminderController;

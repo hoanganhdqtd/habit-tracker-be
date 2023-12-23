@@ -3,10 +3,10 @@ const router = express.Router();
 
 const { body, param } = require("express-validator");
 
-const progressController = require("../controllers/progress.controller");
-
 const validators = require("../middlewares/validators");
 const authentication = require("../middlewares/authentication");
+
+const progressController = require("../controllers/progress.controller");
 
 /**
  * @route POST progress/habit/:habitId
@@ -20,7 +20,7 @@ router.post(
   validators.validate([
     param("habitId").exists().isString().custom(validators.checkObjectId),
   ]),
-  progressController.createNewDailyProgress
+  progressController.addNewDailyProgress
 );
 
 /**
@@ -34,7 +34,21 @@ router.get(
   validators.validate([
     param("habitId").exists().isString().custom(validators.checkObjectId),
   ]),
-  progressController.getHabitProgress
+  progressController.getHabitProgressList
+);
+
+/**
+ * @route GET progress/:progressId
+ * @description Get a single progress with progressId
+ * @access Login required
+ */
+router.get(
+  "/:progressId",
+  authentication.loginRequired,
+  validators.validate([
+    param("progressId").exists().isString().custom(validators.checkObjectId),
+  ]),
+  progressController.getSingleProgress
 );
 
 /**

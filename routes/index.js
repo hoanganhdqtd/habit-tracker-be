@@ -25,4 +25,8 @@ router.use("/reminders", reminderApi);
 const tagApi = require("./tag.api");
 router.use("/tags", tagApi);
 
+// mail API
+const mailApi = require("./mail.api");
+router.use("/mail", mailApi);
+
 module.exports = router;

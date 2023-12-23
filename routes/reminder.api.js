@@ -18,11 +18,12 @@ router.post(
   authentication.loginRequired,
   validators.validate([
     param("habitId").exists().isString().custom(validators.checkObjectId),
-    body("reminderFrequency", "Missing reminderFrequency")
-      .exists()
-      .bail()
-      .notEmpty(),
+    // body("reminderFrequency", "Missing reminderFrequency")
+    //   .exists()
+    //   .bail()
+    //   .notEmpty(),
     body("time", "Missing time").exists().bail().notEmpty(),
+    body("status", "Missing status").exists().bail().notEmpty(),
   ]),
   reminderController.createHabitReminder
 );
@@ -100,6 +101,19 @@ router.delete(
     param("habitId").exists().isString().custom(validators.checkObjectId),
   ]),
   reminderController.deleteHabitAllReminders
+);
+
+/**
+ * @route POST /reminders/:reminderId/mail
+ * @description Send email notifications for a reminder
+ * @access Login required
+ */
+router.post(
+  "/:reminderId/mail",
+  validators.validate([
+    param("reminderId").exists().isString().custom(validators.checkObjectId),
+  ]),
+  reminderController.sendNotification
 );
 
 module.exports = router;
