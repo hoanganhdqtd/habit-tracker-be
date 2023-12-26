@@ -81,7 +81,7 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
 
   const filterConditions = [
     { user: currentUserId },
-    { name: { $regex: search } },
+    { name: { $regex: search, $options: "i" } },
     // { startDate: { $lte: date } },
   ];
 
