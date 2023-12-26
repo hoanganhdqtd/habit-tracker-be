@@ -34,7 +34,7 @@ router.get(
   validators.validate([
     param("habitId").exists().isString().custom(validators.checkObjectId),
   ]),
-  progressController.getHabitProgressList
+  progressController.getSingleHabitProgressList
 );
 
 /**

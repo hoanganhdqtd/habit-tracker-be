@@ -6,28 +6,30 @@ const progressController = {};
 
 // Get progress list of a habit
 // GET progress/habit/:habitId
-progressController.getHabitProgressList = catchAsync(async (req, res, next) => {
-  // Get data
-  const habitId = req.params.habitId;
+progressController.getSingleHabitProgressList = catchAsync(
+  async (req, res, next) => {
+    // Get data
+    const habitId = req.params.habitId;
 
-  // Validation
+    // Validation
 
-  // Process
-  const habit = await Habit.findById(habitId).populate("progress");
-  if (!habit) {
-    throw new AppError(400, "Habit not found", "Get Habit Progress error");
+    // Process
+    const habit = await Habit.findById(habitId).populate("progress");
+    if (!habit) {
+      throw new AppError(400, "Habit not found", "Get Habit Progress error");
+    }
+
+    // Send response
+    sendResponse(
+      res,
+      200,
+      true,
+      { habitId, progressList: habit.progress },
+      null,
+      "Get Habit Progress success"
+    );
   }
-
-  // Send response
-  sendResponse(
-    res,
-    200,
-    true,
-    { habitId, progressList: habit.progress },
-    null,
-    "Get Habit Progress success"
-  );
-});
+);
 
 // Create new daily progress and add to the habit's progress list
 // POST progress/habit/:habitId
