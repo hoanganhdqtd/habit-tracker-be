@@ -77,7 +77,7 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
   page = parseInt(page) || 1;
   limit = parseInt(limit) || 10;
   search = search || "";
-  let nextDate;
+  // let nextDate;
 
   const filterConditions = [
     { user: currentUserId },
@@ -88,8 +88,8 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
   if (date) {
     // date = new Date(date);
 
-    nextDate = new Date(date);
-    nextDate.setDate(nextDate.getDate() + 1);
+    // nextDate = new Date(date);
+    // nextDate.setDate(nextDate.getDate() + 1);
 
     date = dayjs(date)
       .set("hour", 0)
@@ -99,11 +99,11 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
 
     const weekday = date.get("day");
 
-    nextDate = dayjs(nextDate)
-      .set("hour", 0)
-      .set("minute", 0)
-      .set("second", 0)
-      .set("millisecond", 0);
+    // nextDate = dayjs(nextDate)
+    //   .set("hour", 0)
+    //   .set("minute", 0)
+    //   .set("second", 0)
+    //   .set("millisecond", 0);
 
     filterConditions.push({ startDate: { $lte: date } });
     filterConditions.push({ onWeekdays: weekday });
@@ -121,7 +121,8 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
   let habits = await Habit.find(filterCriteria)
     .sort({ createdAt: -1 })
     .skip(offset)
-    .limit(limit);
+    .limit(limit)
+    .populate("progressList");
 
   // Send response
   return sendResponse(
@@ -145,7 +146,7 @@ habitController.getSingleHabit = catchAsync(async (req, res, next) => {
   // let habit = await Habit.findById(habitId);
   let habit = await Habit.findById(habitId)
     .populate("reminders")
-    .populate("progress")
+    .populate("progressList")
     .exec();
   if (!habit) {
     throw new AppError(400, "Habit not found", "Get Single Habit error");

@@ -14,9 +14,13 @@ progressController.getSingleHabitProgressList = catchAsync(
     // Validation
 
     // Process
-    const habit = await Habit.findById(habitId).populate("progress");
+    const habit = await Habit.findById(habitId).populate("progressList");
     if (!habit) {
-      throw new AppError(400, "Habit not found", "Get Habit Progress error");
+      throw new AppError(
+        400,
+        "Habit not found",
+        "Get Single Habit Progress List error"
+      );
     }
 
     // Send response
@@ -24,9 +28,9 @@ progressController.getSingleHabitProgressList = catchAsync(
       res,
       200,
       true,
-      { habitId, progressList: habit.progress },
+      { habitId, progressList: habit.progressList },
       null,
-      "Get Habit Progress success"
+      "Get Single Habit Progress List success"
     );
   }
 );
@@ -52,7 +56,7 @@ progressController.addNewDailyProgress = catchAsync(async (req, res, next) => {
     habit: habitId,
   });
 
-  habit.progress.push(newProgress._id);
+  habit.progressList.push(newProgress._id);
 
   await habit.save();
 

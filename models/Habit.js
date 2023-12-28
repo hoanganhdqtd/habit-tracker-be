@@ -13,7 +13,7 @@ const habitSchema = Schema(
     description: { type: String },
     goal: { type: String, required: true },
     startDate: { type: Date, require: true },
-    progress: [
+    progressList: [
       {
         type: Schema.Types.ObjectId,
         ref: "Progress",
