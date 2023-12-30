@@ -69,7 +69,7 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
   // Get data
   const currentUserId = req.userId;
 
-  let { page, limit, search, date } = req.query;
+  let { page, limit, search, date, tag } = req.query;
 
   // Validation
 
@@ -77,11 +77,13 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
   page = parseInt(page) || 1;
   limit = parseInt(limit) || 10;
   search = search || "";
+  tag = tag || "";
   // let nextDate;
 
   const filterConditions = [
     { user: currentUserId },
     { name: { $regex: search, $options: "i" } },
+    { name: { $regex: tag, $options: "i" } },
     // { startDate: { $lte: date } },
   ];
 

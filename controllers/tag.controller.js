@@ -8,17 +8,17 @@ const tagController = {};
 // POST /tags
 tagController.createTag = catchAsync(async (req, res, next) => {
   // Get data
-  const { title, habitId } = req.body;
+  const { title } = req.body;
   const currentUserId = req.userId;
 
   // Validation
   // Process
-  const newTag = await Tag.create({ title, user: currentUserId, habits: [] });
-  if (habitId) {
-    newTag.habits.push(habitId);
-  }
+  const newTag = await Tag.create({ title, user: currentUserId });
+  // if (habitId) {
+  //   newTag.habits.push(habitId);
+  // }
 
-  await newTag.save();
+  // await newTag.save();
 
   // Send response
   return sendResponse(res, 200, true, newTag, null, "Create Tag success");
