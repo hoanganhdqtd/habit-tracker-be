@@ -129,7 +129,7 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
     res,
     200,
     true,
-    { habits, totalPages, count },
+    { habits, date, totalPages, count },
     null,
     "Get Habits success"
   );
