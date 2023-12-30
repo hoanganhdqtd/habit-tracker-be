@@ -56,6 +56,34 @@ router.delete(
 );
 
 /**
+ * @route POST /tags/habit/:habitId
+ * @description Add a tag to a habit
+ * @access Login required
+ */
+router.post(
+  "/habit/:habitId",
+  authentication.loginRequired,
+  validators.validate([
+    param("habitId").exists().isString().custom(validators.checkObjectId),
+  ]),
+  tagController.addHabitTag
+);
+
+/**
+ * @route GET /tags/habit/:habitId
+ * @description getTagsByHabitId
+ * @access Login required
+ */
+router.get(
+  "/habit/:habitId",
+  authentication.loginRequired,
+  validators.validate([
+    param("habitId").exists().isString().custom(validators.checkObjectId),
+  ]),
+  tagController.getTagsByHabitId
+);
+
+/**
  * @route PUT /tags/:tagId/habit/:habitId
  * @description Remove a tag from a habit's tags
  * @access Login required

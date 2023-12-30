@@ -149,6 +149,7 @@ habitController.getSingleHabit = catchAsync(async (req, res, next) => {
   let habit = await Habit.findById(habitId)
     .populate("reminders")
     .populate("progressList")
+    .populate("tags")
     .exec();
   if (!habit) {
     throw new AppError(400, "Habit not found", "Get Single Habit error");

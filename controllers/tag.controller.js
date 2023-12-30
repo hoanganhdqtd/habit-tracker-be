@@ -1,4 +1,5 @@
 const { catchAsync, sendResponse, AppError } = require("../helpers/utils");
+const Habit = require("../models/Habit");
 
 const Tag = require("../models/Tag");
 
@@ -70,7 +71,7 @@ tagController.updateSingleTag = catchAsync(async (req, res, next) => {
 });
 
 // Remove a tag from a habit's tags
-// PUT /tags/:tagId/:habitId
+// PUT /tags/:tagId/habit/:habitId
 tagController.removeSingleHabitTag = catchAsync(async (req, res, next) => {
   // Get data
   const { tagId, habitId } = req.params;
@@ -93,8 +94,64 @@ tagController.deleteSingleTag = catchAsync(async (req, res, next) => {
     throw new AppError(400, "Tag not found", "Delete Single Tag error");
   }
 
+  // find habits with the deleted tag
+
   // Send response
   return sendResponse(res, 200, true, tag, null, "Delete Single Tag success");
+});
+
+// Add a tag to a habit
+// POST /tags/habit/:habitId
+tagController.addHabitTag = catchAsync(async (req, res, next) => {
+  // Get data
+  const { habitId } = req.params;
+  const currentUserId = req.userId;
+
+  // Validate
+  const habit = await Habit.findById(habitId);
+  if (!habit) {
+    throw new AppError(400, "Habit not found", "Add Habit Tag error");
+  }
+
+  // Process
+  const { title } = req.body;
+  const newTag = await Tag.create({
+    title,
+    // habitId
+    user: currentUserId,
+  });
+
+  habit.tags.push(newTag._id);
+  await habit.save();
+
+  // Send response
+  return sendResponse(res, 200, true, newTag, null, "Add Habit Tag success");
+});
+
+// Get tags by habitId
+// GET /tags/habit/:habitId
+tagController.getTagsByHabitId = catchAsync(async (req, res, next) => {
+  // Get data
+  const { habitId } = req.params;
+  const currentUserId = req.userId;
+
+  // Validate
+  const habit = await Habit.findById(habitId);
+  if (!habit) {
+    throw new AppError(400, "Habit not found", "Get Habit Tags error");
+  }
+
+  // Process
+
+  // Send response
+  return sendResponse(
+    res,
+    200,
+    true,
+    habit.tags,
+    null,
+    "Get Habit Tags success"
+  );
 });
 
 module.exports = tagController;

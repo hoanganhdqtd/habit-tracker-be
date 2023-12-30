@@ -27,6 +27,12 @@ const habitSchema = Schema(
         ref: "Reminder",
       },
     ],
+    tags: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Tag",
+      },
+    ],
   },
   { timestamps: true }
 );
