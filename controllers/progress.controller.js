@@ -1,37 +1,61 @@
+const dayjs = require("dayjs");
+
 const { catchAsync, sendResponse, AppError } = require("../helpers/utils");
 const Habit = require("../models/Habit");
 const Progress = require("../models/Progress");
 
+const ObjectId = require("mongoose").Types.ObjectId;
+
 const progressController = {};
 
 // Get progress list of a habit
-// GET progress/habit/:habitId
+// GET progress/habit/:habitId?date=${date}
 progressController.getSingleHabitProgressList = catchAsync(
   async (req, res, next) => {
     // Get data
     const habitId = req.params.habitId;
+    let { date } = req.query;
 
     // Validation
 
     // Process
-    const habit = await Habit.findById(habitId).populate("progressList");
-    if (!habit) {
-      throw new AppError(
-        400,
-        "Habit not found",
-        "Get Single Habit Progress List error"
+    if (!date) {
+      const habit = await Habit.findById(habitId).populate("progressList");
+      if (!habit) {
+        throw new AppError(
+          400,
+          "Habit not found",
+          "Get Single Habit Progress List error"
+        );
+      }
+
+      // Send response
+      sendResponse(
+        res,
+        200,
+        true,
+        { habitId, progressList: habit.progressList },
+        null,
+        "Get Single Habit Progress List success"
+      );
+    } else {
+      date = dayjs(date)
+        .set("hour", 0)
+        .set("minute", 0)
+        .set("second", 0)
+        .set("millisecond", 0);
+      const progressList = await Progress.find({ habit: habitId, date });
+
+      // Send response
+      sendResponse(
+        res,
+        200,
+        true,
+        { habitId, progressList },
+        null,
+        "Get Single Habit Progress By Date success"
       );
     }
-
-    // Send response
-    sendResponse(
-      res,
-      200,
-      true,
-      { habitId, progressList: habit.progressList },
-      null,
-      "Get Single Habit Progress List success"
-    );
   }
 );
 

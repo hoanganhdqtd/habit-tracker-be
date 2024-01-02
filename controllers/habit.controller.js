@@ -1,8 +1,10 @@
+const BSON = require("mongodb").BSONPure;
 const dayjs = require("dayjs");
 const { catchAsync, sendResponse, AppError } = require("../helpers/utils");
 
 const Habit = require("../models/Habit");
 const Reminder = require("../models/Reminder");
+const Tag = require("../models/Tag");
 
 const habitController = {};
 
@@ -87,6 +89,17 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
     // { startDate: { $lte: date } },
   ];
 
+  let tagsArray = [];
+  let tagToFind;
+  if (tag) {
+    console.log("tag:", tag);
+    tagToFind = await Tag.findOne({ title: tag });
+    // tagsArray = tagsArray.map((tag) => tag._id);
+    console.log("tagToFind:", tagToFind);
+    // tagToFind = new BSON.ObjectId(  )
+    // filterConditions.push({ tags:   });
+  }
+
   if (date) {
     // date = new Date(date);
 
@@ -125,6 +138,8 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
     .skip(offset)
     .limit(limit)
     .populate("progressList");
+
+  console.log("habits:", habits);
 
   // Send response
   return sendResponse(
@@ -220,8 +235,7 @@ habitController.updateSingleHabit = catchAsync(async (req, res, next) => {
   // });
   // console.log(`209 habit: ${habit}`);
 
-  const { name, description, goal, duration, progress, onWeekdays, reminders } =
-    req.body;
+  const { name, description, goal, duration, progress, onWeekdays } = req.body;
 
   if (name) {
     habit.name = name;

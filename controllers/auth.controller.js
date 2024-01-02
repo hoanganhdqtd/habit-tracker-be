@@ -7,10 +7,14 @@ const authController = {};
 authController.loginWithEmail = catchAsync(async (req, res, next) => {
   // Get data from request
   let { email, password } = req.body;
+  // console.log("password:", password);
+  //  const salt = await bcrypt.genSalt(10);
+  //  password = await bcrypt.hash(password, salt);
 
   // Business logic validation
   // to find based on email along with password
   let user = await User.findOne({ email }, "+password");
+  console.log("user:", user);
   if (!user) {
     throw new AppError(400, "Invalid credentials", "Login Error");
   }
@@ -18,6 +22,8 @@ authController.loginWithEmail = catchAsync(async (req, res, next) => {
   // Process
   // user.password: encrypted password
   const isMatch = await bcrypt.compare(password, user.password);
+  // const isMatch = password === user.password;
+  console.log("user.password:", user.password);
   if (!isMatch) {
     throw new AppError(400, "Wrong password", "Login Error");
   }
@@ -40,7 +46,5 @@ authController.loginWithEmail = catchAsync(async (req, res, next) => {
     "Login successfully"
   );
 });
-
-authController.register = catchAsync(async (req, res, next) => {});
 
 module.exports = authController;

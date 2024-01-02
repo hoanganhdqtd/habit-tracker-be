@@ -46,12 +46,12 @@ userController.getCurrentUser = catchAsync(async (req, res, next) => {
   const currentUserId = req.userId;
 
   // Validation
+  // Process
   const user = await User.findById(currentUserId);
   if (!user) {
     throw new AppError(400, "User not found", "Get Current User error");
   }
-
-  // Process
+  console.log("user:", user);
 
   // Send response
   return sendResponse(res, 200, true, user, null, "Get Current User success");
