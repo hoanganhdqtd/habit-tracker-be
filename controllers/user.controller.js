@@ -79,8 +79,12 @@ userController.updateProfile = catchAsync(async (req, res, next) => {
 
   // fields allowed to update
   const allows = ["name", "password", "avatarUrl"];
-  allows.forEach((field) => {
+  allows.forEach((field) => async () => {
     if (req.body[field] !== undefined) {
+      if (field === "password") {
+        const salt = await bcrypt.genSalt(10);
+        user[field] = await bcrypt.hash(req.body[field], salt);
+      }
       user[field] = req.body[field];
     }
   });
@@ -88,6 +92,36 @@ userController.updateProfile = catchAsync(async (req, res, next) => {
 
   // Response
   return sendResponse(res, 200, true, user, null, "Update Profile success");
+});
+
+userController.resetPassword = catchAsync(async (req, res, next) => {
+  // Get data
+  let { email, password } = req.body;
+
+  // Validation
+  let user = await User.findOne({ email });
+  if (!user) {
+    throw new AppError(400, "User not found", "Reset Password error");
+  }
+
+  // Process
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(password, salt);
+
+  await user.save();
+
+  // JWT access token
+  const accessToken = await user.generateToken();
+
+  // Send response
+  return sendResponse(
+    res,
+    200,
+    true,
+    { user, accessToken },
+    null,
+    "Reset Password success"
+  );
 });
 
 module.exports = userController;
