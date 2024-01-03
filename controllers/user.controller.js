@@ -96,7 +96,7 @@ userController.updateProfile = catchAsync(async (req, res, next) => {
 
 userController.resetPassword = catchAsync(async (req, res, next) => {
   // Get data
-  let { email, password } = req.body;
+  let { email, newPassword } = req.body;
 
   // Validation
   let user = await User.findOne({ email });
@@ -106,7 +106,7 @@ userController.resetPassword = catchAsync(async (req, res, next) => {
 
   // Process
   const salt = await bcrypt.genSalt(10);
-  user.password = await bcrypt.hash(password, salt);
+  user.password = await bcrypt.hash(newPassword, salt);
 
   await user.save();
 
