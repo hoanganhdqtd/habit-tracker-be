@@ -139,7 +139,7 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
     .limit(limit)
     .populate("progressList");
 
-  console.log("habits:", habits);
+  // console.log("habits:", habits);
 
   // Send response
   return sendResponse(
