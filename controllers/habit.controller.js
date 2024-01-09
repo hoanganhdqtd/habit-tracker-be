@@ -71,7 +71,7 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
   // Get data
   const currentUserId = req.userId;
 
-  let { page, limit, search, date, tag } = req.query;
+  let { page, limit, search, date, tag, sort } = req.query;
 
   // Validation
 
@@ -133,8 +133,20 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
   const totalPages = Math.ceil(count / limit);
   const offset = limit * (page - 1);
 
+  let sortOptions = {};
+  if (sort === "latest") {
+    sortOptions = { createdAt: -1 };
+  } else {
+    sortOptions = { name: 1 };
+  }
+
+  // let habits = await Habit.find(filterCriteria)
+  //   .sort({ createdAt: -1 })
+  //   .skip(offset)
+  //   .limit(limit)
+  //   .populate("progressList");
   let habits = await Habit.find(filterCriteria)
-    .sort({ createdAt: -1 })
+    .sort(sortOptions)
     .skip(offset)
     .limit(limit)
     .populate("progressList");
