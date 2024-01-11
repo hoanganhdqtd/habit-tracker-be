@@ -79,13 +79,14 @@ userController.updateProfile = catchAsync(async (req, res, next) => {
 
   // fields allowed to update
   const allows = ["name", "password", "avatarUrl"];
-  allows.forEach((field) => async () => {
+  allows.forEach(async (field) => {
     if (req.body[field] !== undefined) {
       if (field === "password") {
         const salt = await bcrypt.genSalt(10);
         user[field] = await bcrypt.hash(req.body[field], salt);
+      } else {
+        user[field] = req.body[field];
       }
-      user[field] = req.body[field];
     }
   });
   await user.save();
