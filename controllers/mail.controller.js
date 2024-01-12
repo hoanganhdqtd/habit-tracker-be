@@ -62,7 +62,9 @@ mailController.sendNotification = catchAsync(async (req, res, next) => {
 
   const email = {
     to: user.email,
-    from: "habittracker@express.com",
+
+    // from: "habittracker@express.com",
+    from: process.env.SENDER_EMAIL,
     subject: `${habit.name} notification`,
     html: "<h1>Note<h1>",
     text: content,
