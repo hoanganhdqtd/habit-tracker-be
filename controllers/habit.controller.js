@@ -158,7 +158,7 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
     res,
     200,
     true,
-    { habits, date, totalPages, count },
+    { habits, date, searchTag: tag, totalPages, count },
     null,
     "Get Habits success"
   );
@@ -247,7 +247,8 @@ habitController.updateSingleHabit = catchAsync(async (req, res, next) => {
   // });
   // console.log(`209 habit: ${habit}`);
 
-  const { name, description, goal, duration, progress, onWeekdays } = req.body;
+  const { name, description, goal, startDate, duration, progress, onWeekdays } =
+    req.body;
 
   if (name) {
     habit.name = name;
@@ -259,6 +260,10 @@ habitController.updateSingleHabit = catchAsync(async (req, res, next) => {
 
   if (goal) {
     habit.goal = goal;
+  }
+
+  if (startDate) {
+    habit.startDate = startDate;
   }
 
   if (duration) {

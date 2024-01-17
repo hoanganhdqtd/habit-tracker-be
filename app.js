@@ -34,26 +34,6 @@ mongoose
   .then(() => console.log("DB connected successfully"))
   .catch((err) => console.log(err));
 
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-
-      // Authorized redirect URIs from Google OAuth2 setting
-      // callbackURL: "http://www.example.com/auth/google/callback",
-      // callbackURL: "/auth/google/callback",
-      callbackURL: process.env.GOOGLE_CALLBACK_URL,
-    },
-    (accessToken, refreshToken, profile, cb) => {
-      console.log("Google accessToken:", accessToken);
-      User.findOrCreate({ googleId: profile.id }, function (err, user) {
-        return cb(err, user);
-      });
-    }
-  )
-);
-
 app.get(
   "/auth/google",
   passport.authenticate("google", {
@@ -62,13 +42,37 @@ app.get(
 );
 
 app.get(
-  "/auth/google/callback",
+  "/auth/google/habit-tracker",
   passport.authenticate(
     "google",
     { failureRedirect: "/login" },
-    function (req, res) {
-      // Successful authentication, redirect home.
-      res.redirect("/");
+    { successRedirect: "/" }
+    // function (req, res) {
+    //   // Successful authentication, redirect home.
+    //   res.redirect("/");
+    // }
+  )
+);
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+
+      // Authorized redirect URIs from Google OAuth2 setting
+      // callbackURL: "/auth/google/habit-tracker",
+      callbackURL: process.env.GOOGLE_CALLBACK_URL,
+
+      // userInfo fields: name (full name), email, picture (AvatarUrl)
+      userProfile: "https://www.googleapis.com/oauth2/v2/userinfo",
+    },
+    (accessToken, refreshToken, profile, cb) => {
+      console.log("Google accessToken:", accessToken);
+      console.log("Google profile:", profile);
+      // User.findOrCreate({ googleId: profile.id }, function (err, user) {
+      //   return cb(err, user);
+      // });
     }
   )
 );
