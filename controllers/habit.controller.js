@@ -89,16 +89,16 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
     // { startDate: { $lte: date } },
   ];
 
-  let tagsArray = [];
-  let tagToFind;
-  if (tag) {
-    console.log("tag:", tag);
-    tagToFind = await Tag.findOne({ title: tag });
-    // tagsArray = tagsArray.map((tag) => tag._id);
-    console.log("tagToFind:", tagToFind);
-    // tagToFind = new BSON.ObjectId(  )
-    // filterConditions.push({ tags:   });
-  }
+  // let tagsArray = [];
+  // let tagToFind;
+  // if (tag) {
+  //   console.log("tag:", tag);
+  //   tagToFind = await Tag.findOne({ title: tag });
+  //   // tagsArray = tagsArray.map((tag) => tag._id);
+  //   console.log("tagToFind:", tagToFind);
+  //   // tagToFind = new BSON.ObjectId(  )
+  //   // filterConditions.push({ tags:   });
+  // }
 
   if (date) {
     // date = new Date(date);
