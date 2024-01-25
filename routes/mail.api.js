@@ -14,6 +14,6 @@ const validators = require("../middlewares/validators");
  */
 const mailController = require("../controllers/mail.controller");
 
-router.post("/", authentication.loginRequired, mailController.sendNotification);
+router.post("/", mailController.scheduleTasks);
 
 module.exports = router;

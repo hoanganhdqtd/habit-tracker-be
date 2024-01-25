@@ -4,13 +4,15 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var cors = require("cors");
+var session = require("express-session");
 
 var mongoose = require("mongoose");
 
+const mailController = require("./controllers/mail.controller");
+const User = require("./models/User");
+
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-
-const User = require("./models/User");
 
 const { sendResponse } = require("./helpers/utils");
 
@@ -28,31 +30,26 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use(cors());
 
+// app.use(session({ … }));
+app.use(
+  session({
+    secret: process.env.GOOGLE_CLIENT_SECRET,
+    resave: true,
+    saveUninitialized: true,
+  })
+);
+// app.use(passport.initialize());
+// app.use(passport.session());
+
 const mongoURI = process.env.MONGODB_URI;
 mongoose
   .connect(mongoURI)
-  .then(() => console.log("DB connected successfully"))
-  .catch((err) => console.log(err));
-
-app.get(
-  "/auth/google",
-  passport.authenticate("google", {
-    scope: ["profile", "email"],
+  .then(() => {
+    console.log("DB connected successfully");
+    // Schedule email tasks
+    mailController.scheduleTasks();
   })
-);
-
-app.get(
-  "/auth/google/habit-tracker",
-  passport.authenticate(
-    "google",
-    { failureRedirect: "/login" },
-    { successRedirect: "/" }
-    // function (req, res) {
-    //   // Successful authentication, redirect home.
-    //   res.redirect("/");
-    // }
-  )
-);
+  .catch((err) => console.log(err));
 
 passport.use(
   new GoogleStrategy(
@@ -70,11 +67,32 @@ passport.use(
     (accessToken, refreshToken, profile, cb) => {
       console.log("Google accessToken:", accessToken);
       console.log("Google profile:", profile);
+
+      return cb(null, profile);
+
       // User.findOrCreate({ googleId: profile.id }, function (err, user) {
       //   return cb(err, user);
       // });
     }
   )
+);
+
+app.get(
+  "/auth/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+  })
+);
+
+app.get(
+  "/auth/google/habit-tracker",
+  passport.authenticate("google", { failureRedirect: "/login" }),
+  // { successRedirect: "/" }
+  function (req, res) {
+    // Successful authentication, redirect home.
+    console.log("req:", req);
+    res.redirect("/");
+  }
 );
 
 var indexRouter = require("./routes/index");

@@ -1,8 +1,21 @@
 const nodemailer = require("nodemailer");
+const sendgridTransport = require("nodemailer-sendgrid-transport");
+const cron = require("node-cron");
+const dayjs = require("dayjs");
+
 const { catchAsync, sendResponse, AppError } = require("../helpers/utils");
 
 const Habit = require("../models/Habit");
 const Reminder = require("../models/Reminder");
+
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+const transporter = nodemailer.createTransport(
+  sendgridTransport({
+    auth: {
+      api_key: SENDGRID_API_KEY,
+    },
+  })
+);
 
 const reminderController = {};
 
@@ -213,7 +226,21 @@ reminderController.sendNotification = catchAsync(async (req, res, next) => {
   // Get data
   const { reminderId } = req.params;
   // Validation
+  let reminder = await Reminder.findById(reminderId);
+  if (!reminder) {
+    throw new AppError(400, "Reminder not found", "Send Notification error");
+  }
+
   // Process
+  const currentTime = dayjs().format("HH:mm");
+  const currentWeekday = dayjs().day();
+  if (
+    currentTime.isSame(dayjs(reminder.time)) &&
+    reminder.onWeekdays.includes(currentWeekday)
+  ) {
+    // const
+  }
+
   // Send response
 });
 

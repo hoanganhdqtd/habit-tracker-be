@@ -28,4 +28,21 @@ router.post(
   authController.loginWithEmail
 );
 
+/**
+ * @route POST /auth/forgot-password
+ * @description send email with link to reset password
+ * @body { email }
+ */
+router.post(
+  "/forgot-password",
+  validators.validate([
+    body("email", "Invalid email")
+      .exists()
+      .bail()
+      .isEmail()
+      .normalizeEmail({ gmail_remove_dots: false }),
+  ]),
+  authController.forgotPassword
+);
+
 module.exports = router;
