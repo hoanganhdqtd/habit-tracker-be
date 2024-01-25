@@ -30,17 +30,6 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use(cors());
 
-// app.use(session({ … }));
-app.use(
-  session({
-    secret: process.env.GOOGLE_CLIENT_SECRET,
-    resave: true,
-    saveUninitialized: true,
-  })
-);
-// app.use(passport.initialize());
-// app.use(passport.session());
-
 const mongoURI = process.env.MONGODB_URI;
 mongoose
   .connect(mongoURI)
@@ -62,7 +51,9 @@ passport.use(
       callbackURL: process.env.GOOGLE_CALLBACK_URL,
 
       // userInfo fields: name (full name), email, picture (AvatarUrl)
-      userProfile: "https://www.googleapis.com/oauth2/v2/userinfo",
+      // https://developers.google.com/identity/protocols/oauth2/scopes
+      // userProfile: "https://www.googleapis.com/oauth2/v2/userinfo",
+      userProfile: "https://www.googleapis.com/oauth2/v3/userinfo",
     },
     (accessToken, refreshToken, profile, cb) => {
       console.log("Google accessToken:", accessToken);
@@ -76,6 +67,26 @@ passport.use(
     }
   )
 );
+
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+
+passport.deserializeUser((obj, done) => {
+  done(null, obj);
+});
+
+// app.use(session({ … }));
+app.use(
+  session({
+    secret: process.env.GOOGLE_CLIENT_SECRET,
+    resave: false, // don't save session if unmodified
+    saveUninitialized: false, // don't create session until something stored
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
+// app.use(passport.authenticate("session"));
 
 app.get(
   "/auth/google",
@@ -91,6 +102,7 @@ app.get(
   function (req, res) {
     // Successful authentication, redirect home.
     console.log("req:", req);
+    console.log("Authenticated user:", req.user);
     res.redirect("/");
   }
 );
