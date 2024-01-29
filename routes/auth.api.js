@@ -45,4 +45,21 @@ router.post(
   authController.forgotPassword
 );
 
+/**
+ * @route POST /auth/reset-password
+ * @description reset password
+ * @body { checksum, newPassword }
+ */
+router.post(
+  "/reset-password",
+  // validators.validate([
+  //   body("email", "Invalid email")
+  //     .exists()
+  //     .bail()
+  //     .isEmail()
+  //     .normalizeEmail({ gmail_remove_dots: false }),
+  // ]),
+  authController.resetPassword
+);
+
 module.exports = router;

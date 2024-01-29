@@ -59,7 +59,7 @@ passport.use(
       console.log("Google accessToken:", accessToken);
       console.log("Google profile:", profile);
 
-      return cb(null, profile);
+      // return cb(null, profile);
 
       // User.findOrCreate({ googleId: profile.id }, function (err, user) {
       //   return cb(err, user);
@@ -101,9 +101,9 @@ app.get(
   // { successRedirect: "/" }
   function (req, res) {
     // Successful authentication, redirect home.
-    console.log("req:", req);
+    // console.log("req:", req);
     console.log("Authenticated user:", req.user);
-    res.redirect("/");
+    res.redirect(`${process.env.DEPLOY_URL}`);
   }
 );
 

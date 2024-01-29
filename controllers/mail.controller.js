@@ -53,7 +53,7 @@ const sendNotification = async (habit) => {
     to: habit.user.email,
     from: process.env.SENDER_EMAIL,
     subject: `<h1>${habit.name} notification</h1>`,
-    html: `${habit.name} to complete`,
+    html: `Note! You have ${habit.name} to complete`,
     // text: `${habit.name} to complete`, // Replace with actual content
   };
 
