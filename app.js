@@ -8,6 +8,7 @@ var session = require("express-session");
 
 var mongoose = require("mongoose");
 
+const authController = require("./controllers/auth.controller");
 const mailController = require("./controllers/mail.controller");
 const User = require("./models/User");
 
@@ -55,7 +56,7 @@ passport.use(
       // userProfile: "https://www.googleapis.com/oauth2/v2/userinfo",
       userProfile: "https://www.googleapis.com/oauth2/v3/userinfo",
     },
-    (accessToken, refreshToken, profile, cb) => {
+    async (accessToken, refreshToken, profile, cb) => {
       console.log("Google accessToken:", accessToken);
       console.log("Google profile:", profile);
 
@@ -64,6 +65,27 @@ passport.use(
       // User.findOrCreate({ googleId: profile.id }, function (err, user) {
       //   return cb(err, user);
       // });
+
+      try {
+        const email = profile.emails[0].value;
+        const name = profile.displayName;
+        const avatarUrl = profile.picture;
+        let user = await User.findOne({ email });
+        if (!user) {
+          user = await User.create({
+            email,
+            name,
+            avatarUrl,
+            googleId: profile.id,
+          });
+          user.accessToken = await user.generateToken();
+          await user.save();
+        }
+
+        return cb(null, user); // null: no err
+      } catch (err) {
+        return cb(err, null);
+      }
     }
   )
 );
@@ -82,6 +104,9 @@ app.use(
     secret: process.env.GOOGLE_CLIENT_SECRET,
     resave: false, // don't save session if unmodified
     saveUninitialized: false, // don't create session until something stored
+    cookie: {
+      maxAge: 86400000, // 1d
+    },
   })
 );
 app.use(passport.initialize());
@@ -97,15 +122,43 @@ app.get(
 
 app.get(
   "/auth/google/habit-tracker",
-  passport.authenticate("google", { failureRedirect: "/login" }),
-  // { successRedirect: "/" }
+  passport.authenticate("google", {
+    // successRedirect: "/",
+    successRedirect: `${process.env.DEPLOY_URL}/google-login`,
+    failureRedirect: `${process.env.DEPLOY_URL}/login`,
+  }),
   function (req, res) {
     // Successful authentication, redirect home.
     // console.log("req:", req);
+    // serialized user returned by req.user
     console.log("Authenticated user:", req.user);
     res.redirect(`${process.env.DEPLOY_URL}`);
+    console.log(
+      sendResponse(res, 200, true, {
+        user: req.user,
+        accessToken: req.user.accessToken,
+      })
+    );
+    return sendResponse(res, 200, true, {
+      user: req.user,
+      accessToken: req.user.accessToken,
+    });
   }
 );
+
+app.get("/logout", (req, res, next) => {
+  // call Passport logout
+  if (req.user) {
+    req.session.destroy();
+    req.logout((err) => {
+      if (err) {
+        console.log("err");
+        return next(err);
+      }
+      res.redirect("/");
+    });
+  }
+});
 
 var indexRouter = require("./routes/index");
 app.use("/api", indexRouter);
