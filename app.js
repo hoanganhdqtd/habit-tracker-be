@@ -15,7 +15,7 @@ const User = require("./models/User");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
-const { sendResponse } = require("./helpers/utils");
+const { sendResponse, AppError } = require("./helpers/utils");
 
 // const cron = require("node-cron");
 
@@ -29,7 +29,14 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use(cors());
+// app.use(cors());
+app.use(
+  cors({
+    origin: process.env.DEPLOY_URL,
+    methods: "GET,POST,PUT,DELETE",
+    credentials: true,
+  })
+);
 
 const mongoURI = process.env.MONGODB_URI;
 mongoose
@@ -76,13 +83,14 @@ passport.use(
             email,
             name,
             avatarUrl,
-            googleId: profile.id,
+            // googleId: profile.id,
           });
-          user.accessToken = await user.generateToken();
-          await user.save();
         }
+        user.googleId = profile.id;
+        await user.save();
+        console.log("loginWithGoogle user:", user);
 
-        return cb(null, user); // null: no err
+        return cb(null, { user, accessToken }); // null: no err
       } catch (err) {
         return cb(err, null);
       }
@@ -124,27 +132,61 @@ app.get(
   "/auth/google/habit-tracker",
   passport.authenticate("google", {
     // successRedirect: "/",
-    successRedirect: `${process.env.DEPLOY_URL}/google-login`,
+    // successRedirect: `${process.env.DEPLOY_URL}/google-login`,
     failureRedirect: `${process.env.DEPLOY_URL}/login`,
   }),
   function (req, res) {
     // Successful authentication, redirect home.
     // console.log("req:", req);
     // serialized user returned by req.user
-    console.log("Authenticated user:", req.user);
-    res.redirect(`${process.env.DEPLOY_URL}`);
-    console.log(
-      sendResponse(res, 200, true, {
-        user: req.user,
-        accessToken: req.user.accessToken,
-      })
-    );
-    return sendResponse(res, 200, true, {
-      user: req.user,
-      accessToken: req.user.accessToken,
-    });
+    // console.log("Authenticated user:", req.user);
+    res.redirect(`${process.env.DEPLOY_URL}/google-login`);
+    // console.log(
+    //   sendResponse(
+    //     res,
+    //     200,
+    //     true,
+    //     {
+    //       user: req.user,
+    //       // accessToken: req.user.accessToken,
+    //     },
+    //     null,
+    //     "Google Authentication success"
+    //   )
+    // );
+    // return sendResponse(
+    //   res,
+    //   200,
+    //   true,
+    //   {
+    //     user: req.user,
+    //     // accessToken: req.user.accessToken,
+    //   },
+    //   null,
+    //   "Google Authentication success"
+    // );
   }
 );
+
+// To get data from Google account
+app.get("/google-login/success", async (req, res) => {
+  console.log("google-login-success req.user:", req.user);
+  if (!req.user) {
+    throw new AppError(400, "Not authorized", "Google Login error");
+  }
+
+  return sendResponse(
+    res,
+    200,
+    true,
+    {
+      user: req.user.user,
+      accessToken: req.user.accessToken,
+    },
+    null,
+    "Google Login success"
+  );
+});
 
 app.get("/logout", (req, res, next) => {
   // call Passport logout
