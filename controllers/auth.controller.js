@@ -61,9 +61,6 @@ const authController = {};
 authController.loginWithEmail = catchAsync(async (req, res, next) => {
   // Get data from request
   let { email, password } = req.body;
-  // console.log("password:", password);
-  //  const salt = await bcrypt.genSalt(10);
-  //  password = await bcrypt.hash(password, salt);
 
   // Business logic validation
   // to find based on email along with password
@@ -77,7 +74,7 @@ authController.loginWithEmail = catchAsync(async (req, res, next) => {
   // user.password: encrypted password
   const isMatch = await bcrypt.compare(password, user.password);
   // const isMatch = password === user.password;
-  console.log("user.password:", user.password);
+
   if (!isMatch) {
     throw new AppError(400, "Wrong password", "Login error");
   }
@@ -85,11 +82,9 @@ authController.loginWithEmail = catchAsync(async (req, res, next) => {
   // JWT token
   const accessToken = await user.generateToken();
 
-  console.log("accessToken:", accessToken);
+  // console.log("accessToken:", accessToken);
 
   // Response
-  // res.send("User registration");
-  // sendResponse(res, statusCode, isSuccessful, data, error, message)
   sendResponse(
     res,
     200,
@@ -115,7 +110,7 @@ authController.forgotPassword = catchAsync(async (req, res, next) => {
   // const expireTime = Date.now() + 3600000; // 1h
   const expireTime = "1h";
   const resetToken = await createResetToken(user._id, 60);
-  console.log("forgotPassword resetToken:", resetToken);
+  // console.log("forgotPassword resetToken:", resetToken);
   const checksum = createChecksum(user._id, expireTime, resetToken);
   const resetPasswordLink = `${process.env.DEPLOY_URL}/reset-password?checksum=${checksum}`;
 
@@ -138,15 +133,6 @@ authController.forgotPassword = catchAsync(async (req, res, next) => {
   });
 
   // Send response
-  // return sendResponse(
-  //   res,
-  //   200,
-  //   true,
-  //   // mailOptions,
-  //   { user, resetToken },
-  //   null,
-  //   "Send Password Reset Email success"
-  // );
   return sendResponse(
     res,
     200,
@@ -161,16 +147,16 @@ authController.forgotPassword = catchAsync(async (req, res, next) => {
 authController.resetPassword = catchAsync(async (req, res, next) => {
   // Get data
   const { checksum, newPassword } = req.body;
-  console.log("checksum:", checksum);
-  console.log("newPassword:", newPassword);
+  // console.log("checksum:", checksum);
+  // console.log("newPassword:", newPassword);
 
   // Validation
   const userId = passwordResetCheckSums[checksum];
   const expireTime = "1h";
   const resetToken = await createResetToken(userId, 60);
-  console.log("resetPassword resetToken:", resetToken);
+  // console.log("resetPassword resetToken:", resetToken);
 
-  console.log("resetPassword userId:", userId);
+  // console.log("resetPassword userId:", userId);
 
   let user = await User.findOne({ _id: userId });
   if (!user) {
