@@ -96,10 +96,10 @@ tagController.deleteSingleTag = catchAsync(async (req, res, next) => {
 
   // find habits with the deleted tag
   const habits = await Habit.find({ tags: { $in: [tagId] } });
-  console.log("habits:", habits);
+  // console.log("habits:", habits);
   habits.forEach(async (habit) => {
     habit.tags = habit.tags.filter((tag) => tag.equals(tagId));
-    console.log("habit.tags:", habit.tags);
+    // console.log("habit.tags:", habit.tags);
     await habit.save();
   });
 

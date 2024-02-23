@@ -17,7 +17,7 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
 const { sendResponse, AppError } = require("./helpers/utils");
 
-// const cron = require("node-cron");
+const cron = require("node-cron");
 
 // const nodemailer = require("nodemailer");
 
@@ -44,7 +44,8 @@ mongoose
   .then(() => {
     console.log("DB connected successfully");
     // Schedule email tasks
-    mailController.scheduleTasks();
+    // mailController.scheduleTasks();
+    cron.schedule("* * * * *", mailController.scheduleTasks);
   })
   .catch((err) => console.log(err));
 
@@ -55,7 +56,6 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
 
       // Authorized redirect URIs from Google OAuth2 setting
-      // callbackURL: "/auth/google/habit-tracker",
       callbackURL: process.env.GOOGLE_CALLBACK_URL,
 
       // userInfo fields: name (full name), email, picture (AvatarUrl)
@@ -64,14 +64,8 @@ passport.use(
       userProfile: "https://www.googleapis.com/oauth2/v3/userinfo",
     },
     async (accessToken, refreshToken, profile, cb) => {
-      console.log("Google accessToken:", accessToken);
-      console.log("Google profile:", profile);
-
-      // return cb(null, profile);
-
-      // User.findOrCreate({ googleId: profile.id }, function (err, user) {
-      //   return cb(err, user);
-      // });
+      // console.log("Google accessToken:", accessToken);
+      // console.log("Google profile:", profile);
 
       try {
         const email = profile.emails[0].value;
@@ -86,11 +80,12 @@ passport.use(
             // googleId: profile.id,
           });
         }
+        const JWT_accessToken = await user.generateToken();
         user.googleId = profile.id;
         await user.save();
-        console.log("loginWithGoogle user:", user);
+        // console.log("loginWithGoogle user:", user);
 
-        return cb(null, { user, accessToken }); // null: no err
+        return cb(null, { user, accessToken: JWT_accessToken }); // null: no err
       } catch (err) {
         return cb(err, null);
       }
@@ -141,36 +136,12 @@ app.get(
     // serialized user returned by req.user
     // console.log("Authenticated user:", req.user);
     res.redirect(`${process.env.DEPLOY_URL}/google-login`);
-    // console.log(
-    //   sendResponse(
-    //     res,
-    //     200,
-    //     true,
-    //     {
-    //       user: req.user,
-    //       // accessToken: req.user.accessToken,
-    //     },
-    //     null,
-    //     "Google Authentication success"
-    //   )
-    // );
-    // return sendResponse(
-    //   res,
-    //   200,
-    //   true,
-    //   {
-    //     user: req.user,
-    //     // accessToken: req.user.accessToken,
-    //   },
-    //   null,
-    //   "Google Authentication success"
-    // );
   }
 );
 
 // To get data from Google account
 app.get("/google-login/success", async (req, res) => {
-  console.log("google-login-success req.user:", req.user);
+  // console.log("google-login-success req.user:", req.user);
   if (!req.user) {
     throw new AppError(400, "Not authorized", "Google Login error");
   }
@@ -217,9 +188,6 @@ app.use((err, req, res, next) => {
   console.log(err);
 
   if (err.isOperational) {
-    // AppError
-    // sendResponse(res, statusCode, isSuccessful, data, message, errorType)
-    // sendResponse(res, statusCode, isSuccessful, data, errorType, message)
     return sendResponse(
       res,
       err.statusCode ? err.statusCode : 500,
