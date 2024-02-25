@@ -56,15 +56,6 @@ router.get(
  * @description Update a daily progress status
  * @access Login required
  */
-// router.put(
-//   "/:progressId/habit/:habitId",
-//   authentication.loginRequired,
-//   validators.validate([
-//     param("progressId").exists().isString().custom(validators.checkObjectId),
-//     param("habitId").exists().isString().custom(validators.checkObjectId),
-//   ]),
-//   progressController.updateDailyProgress
-// );
 router.put(
   "/habit/:habitId",
   authentication.loginRequired,

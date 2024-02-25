@@ -220,28 +220,4 @@ reminderController.deleteHabitAllReminders = catchAsync(
   }
 );
 
-// Send email notifications for a reminder
-// POST /reminders/:reminderId/mail
-reminderController.sendNotification = catchAsync(async (req, res, next) => {
-  // Get data
-  const { reminderId } = req.params;
-  // Validation
-  let reminder = await Reminder.findById(reminderId);
-  if (!reminder) {
-    throw new AppError(400, "Reminder not found", "Send Notification error");
-  }
-
-  // Process
-  const currentTime = dayjs().format("HH:mm");
-  const currentWeekday = dayjs().day();
-  if (
-    currentTime.isSame(dayjs(reminder.time)) &&
-    reminder.onWeekdays.includes(currentWeekday)
-  ) {
-    // const
-  }
-
-  // Send response
-});
-
 module.exports = reminderController;

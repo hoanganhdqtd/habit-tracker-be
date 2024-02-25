@@ -50,16 +50,6 @@ router.post(
  * @description reset password
  * @body { checksum, newPassword }
  */
-router.post(
-  "/reset-password",
-  // validators.validate([
-  //   body("email", "Invalid email")
-  //     .exists()
-  //     .bail()
-  //     .isEmail()
-  //     .normalizeEmail({ gmail_remove_dots: false }),
-  // ]),
-  authController.resetPassword
-);
+router.post("/reset-password", authController.resetPassword);
 
 module.exports = router;

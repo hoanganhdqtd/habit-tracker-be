@@ -18,10 +18,6 @@ router.post(
   authentication.loginRequired,
   validators.validate([
     param("habitId").exists().isString().custom(validators.checkObjectId),
-    // body("reminderFrequency", "Missing reminderFrequency")
-    //   .exists()
-    //   .bail()
-    //   .notEmpty(),
     body("time", "Missing time").exists().bail().notEmpty(),
     body("status", "Missing status").exists().bail().notEmpty(),
   ]),
@@ -44,27 +40,10 @@ router.get(
 
 /**
  * @route PUT /reminders/:reminderId
- * @description Update a reminder for a habit
+ * @description Update a reminder with reminderId for a habit
  * @body { reminderFrequency, onWeekdays, time, status }
  * @access Login required
  */
-// router.put(
-//   "/habit/:id",
-//   authentication.loginRequired,
-//   validators.validate([
-//     param("id").exists().isString().custom(validators.checkObjectId),
-//   ]),
-//   reminderController.updateSingleReminder
-// );
-// router.put(
-//   "/habit/:habitId/reminder/:reminderId",
-//   authentication.loginRequired,
-//   validators.validate([
-//     param("habitId").exists().isString().custom(validators.checkObjectId),
-//     param("reminderId").exists().isString().custom(validators.checkObjectId),
-//   ]),
-//   reminderController.updateSingleReminder
-// );
 router.put(
   "/:reminderId",
   authentication.loginRequired,
@@ -76,7 +55,7 @@ router.put(
 
 /**
  * @route DELETE /reminders/:reminderId/habit/:habitId/
- * @description Delete a reminder with reminderId from a habit with habitId
+ * @description Delete a reminder with reminderId from a habit's reminders list with habitId
  * @access Login required
  */
 router.delete(
@@ -101,19 +80,6 @@ router.delete(
     param("habitId").exists().isString().custom(validators.checkObjectId),
   ]),
   reminderController.deleteHabitAllReminders
-);
-
-/**
- * @route POST /reminders/:reminderId/mail
- * @description Send email notifications for a reminder
- * @access Login required
- */
-router.post(
-  "/:reminderId/mail",
-  validators.validate([
-    param("reminderId").exists().isString().custom(validators.checkObjectId),
-  ]),
-  reminderController.sendNotification
 );
 
 module.exports = router;
