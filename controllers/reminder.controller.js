@@ -1,21 +1,7 @@
-const nodemailer = require("nodemailer");
-const sendgridTransport = require("nodemailer-sendgrid-transport");
-const cron = require("node-cron");
-const dayjs = require("dayjs");
-
 const { catchAsync, sendResponse, AppError } = require("../helpers/utils");
 
 const Habit = require("../models/Habit");
 const Reminder = require("../models/Reminder");
-
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
-const transporter = nodemailer.createTransport(
-  sendgridTransport({
-    auth: {
-      api_key: SENDGRID_API_KEY,
-    },
-  })
-);
 
 const reminderController = {};
 
@@ -24,16 +10,13 @@ const reminderController = {};
 reminderController.createHabitReminder = catchAsync(async (req, res, next) => {
   // Get data
   const habitId = req.params.habitId;
-  // const { reminderFrequency, time, onWeekdays, startDate, status } = req.body;
   const { time, onWeekdays, startDate, status } = req.body;
 
   // Validation
 
   // Process
   const newReminder = await Reminder.create({
-    // reminderFrequency,
     time,
-    // onWeekdays,
     startDate,
     status,
   });
@@ -47,16 +30,6 @@ reminderController.createHabitReminder = catchAsync(async (req, res, next) => {
   }
 
   await newReminder.save();
-
-  // if (onWeekdays) {
-  //   newReminder.onWeekdays = onWeekdays;
-  //   await newReminder.save();
-  // }
-
-  // if (status) {
-  //   newReminder.status = status;
-  //   await newReminder.save();
-  // }
 
   let habit = await Habit.findById(habitId);
 
@@ -78,7 +51,7 @@ reminderController.getSingleReminder = catchAsync(async (req, res, next) => {
   // Validation
 
   // Processing
-  let reminder = await Reminder.findById(reminderId);
+  const reminder = await Reminder.findById(reminderId);
   if (!reminder) {
     throw new AppError(400, "Reminder not found", "Get Single Reminder error");
   }
@@ -103,12 +76,8 @@ reminderController.updateSingleReminder = catchAsync(async (req, res, next) => {
   // Validation
 
   // Process
-  let reminder = await Reminder.findById(reminderId);
-  // const { reminderFrequency, time, startDate, onWeekdays, status } = req.body;
+  const reminder = await Reminder.findById(reminderId);
   const { time, startDate, onWeekdays, status } = req.body;
-  // if (reminderFrequency) {
-  //   reminder.reminderFrequency = reminderFrequency;
-  // }
   if (startDate) {
     reminder.startDate = startDate;
   }
@@ -142,7 +111,7 @@ reminderController.deleteHabitSingleReminder = catchAsync(
     const { habitId, reminderId } = req.params;
 
     // Validation
-    let habit = await Habit.findById(habitId);
+    const habit = await Habit.findById(habitId);
     if (!habit) {
       throw new AppError(
         400,
@@ -162,7 +131,7 @@ reminderController.deleteHabitSingleReminder = catchAsync(
     }
 
     // Process
-    let reminder = await Reminder.findByIdAndDelete(reminderId);
+    const reminder = await Reminder.findByIdAndDelete(reminderId);
 
     if (!reminder) {
       throw new AppError(
@@ -198,7 +167,7 @@ reminderController.deleteHabitAllReminders = catchAsync(
   async (req, res, next) => {
     // Get data
     const habitId = req.params.habitId;
-    let habit = await Habit.findById(habitId);
+    const habit = await Habit.findById(habitId);
 
     // Validation
 

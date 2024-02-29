@@ -25,7 +25,7 @@ userController.register = catchAsync(async (req, res, next) => {
   password = await bcrypt.hash(password, salt);
   user = await User.create({ name, email, password });
 
-  // JWT access token
+  // Create JWT access token
   const accessToken = await user.generateToken();
 
   // Send response
@@ -46,7 +46,9 @@ userController.getCurrentUser = catchAsync(async (req, res, next) => {
   const currentUserId = req.userId;
 
   // Validation
+
   // Process
+  // Find user
   const user = await User.findById(currentUserId);
   if (!user) {
     throw new AppError(400, "User not found", "Get Current User error");
@@ -62,23 +64,15 @@ userController.updateProfile = catchAsync(async (req, res, next) => {
   const currentUserId = req.userId;
 
   // Validation
-
-  // check if the current user is allowed to update profile
-  // admin || currentUserId === userId
-  // if (currentUserId !== userId) {
-  //   throw new AppError(400, "Permission required", "Update Profile Error");
-  // }
-
-  let user = await User.findById(currentUserId);
+  const user = await User.findById(currentUserId);
   if (!user) {
     throw new AppError(400, "User not found", "Update Profile error");
   }
 
   // Process
-
   // fields allowed to update
-  const allows = ["name", "password", "avatarUrl"];
-  allows.forEach(async (field) => {
+  const allowedFields = ["name", "password", "avatarUrl"];
+  allowedFields.forEach(async (field) => {
     if (req.body[field] !== undefined) {
       if (field === "password") {
         const salt = await bcrypt.genSalt(10);
@@ -88,6 +82,7 @@ userController.updateProfile = catchAsync(async (req, res, next) => {
       }
     }
   });
+  // save updated user
   await user.save();
 
   // Response
@@ -96,10 +91,10 @@ userController.updateProfile = catchAsync(async (req, res, next) => {
 
 userController.resetPassword = catchAsync(async (req, res, next) => {
   // Get data
-  let { email, newPassword } = req.body;
+  const { email, newPassword } = req.body;
 
   // Validation
-  let user = await User.findOne({ email });
+  const user = await User.findOne({ email });
   if (!user) {
     throw new AppError(400, "User not found", "Reset Password error");
   }
@@ -107,10 +102,10 @@ userController.resetPassword = catchAsync(async (req, res, next) => {
   // Process
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(newPassword, salt);
-
+  // Save updated password
   await user.save();
 
-  // JWT access token
+  // Create JWT access token
   const accessToken = await user.generateToken();
 
   // Send response

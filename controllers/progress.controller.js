@@ -4,8 +4,6 @@ const { catchAsync, sendResponse, AppError } = require("../helpers/utils");
 const Habit = require("../models/Habit");
 const Progress = require("../models/Progress");
 
-const ObjectId = require("mongoose").Types.ObjectId;
-
 const progressController = {};
 
 // Get progress list of a habit
@@ -122,7 +120,6 @@ progressController.getSingleProgress = catchAsync(async (req, res, next) => {
 });
 
 // Update daily progress
-// PUT progress/:progressId/habit/:habitId
 // PUT progress/habit/:habitId
 progressController.updateDailyProgress = catchAsync(async (req, res, next) => {
   // Get data
@@ -156,11 +153,6 @@ progressController.updateDailyProgress = catchAsync(async (req, res, next) => {
 
   // Process
   if (!progress) {
-    // throw new AppError(
-    //   400,
-    //   "Progress not found",
-    //   "Update Daily Progress error"
-    // );
     progress = await Progress.create({
       status,
       date,

@@ -5,7 +5,6 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { AppError, catchAsync, sendResponse } = require("../helpers/utils");
 const User = require("../models/User");
-const mailController = require("./mail.controller");
 const transporter = nodemailer.createTransport(
   sendgridTransport({
     auth: {
@@ -65,21 +64,18 @@ authController.loginWithEmail = catchAsync(async (req, res, next) => {
   // Business logic validation
   // to find based on email along with password
   let user = await User.findOne({ email }, "+password");
-  console.log("user:", user);
   if (!user) {
     throw new AppError(400, "Invalid credentials", "Login Error");
   }
 
   // Process
-  // user.password: encrypted password
+  // check if encrypted passwords match
   const isMatch = await bcrypt.compare(password, user.password);
-  // const isMatch = password === user.password;
-
   if (!isMatch) {
     throw new AppError(400, "Wrong password", "Login error");
   }
 
-  // JWT token
+  // Create JWT token
   const accessToken = await user.generateToken();
 
   // console.log("accessToken:", accessToken);
@@ -89,7 +85,6 @@ authController.loginWithEmail = catchAsync(async (req, res, next) => {
     res,
     200,
     true,
-    // { name, email, password },
     { user, accessToken },
     null,
     "Login successfully"
@@ -137,7 +132,6 @@ authController.forgotPassword = catchAsync(async (req, res, next) => {
     res,
     200,
     true,
-    // mailOptions,
     null,
     null,
     "Send Password Reset Email success"
@@ -195,8 +189,6 @@ authController.resetPassword = catchAsync(async (req, res, next) => {
     res,
     200,
     true,
-    // mailOptions,
-    // { user, resetToken },
     { user, accessToken },
     null,
     "Password Reset success"

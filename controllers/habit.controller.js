@@ -1,10 +1,7 @@
-const BSON = require("mongodb").BSONPure;
 const dayjs = require("dayjs");
 const { catchAsync, sendResponse, AppError } = require("../helpers/utils");
 
 const Habit = require("../models/Habit");
-const Reminder = require("../models/Reminder");
-const Tag = require("../models/Tag");
 
 const habitController = {};
 
@@ -20,25 +17,13 @@ habitController.createHabit = catchAsync(async (req, res, next) => {
     startDate,
     duration,
     onWeekdays,
-    reminders,
+    // reminders,
   } = req.body;
 
   // Validation
 
   // Process
-
-  // create reminders
-  // const habitReminders = reminders.map(async (reminder) => {
-  //   const newReminder = await Reminder.create({
-  //     reminderFrequency: reminder.reminderFrequency,
-  //     time: reminder.time,
-  //     onWeekdays: reminder.onWeekdays,
-  //     status: reminder.status,
-  //   });
-  //   return newReminder;
-  // });
-
-  let habit = await Habit.create({
+  const habit = await Habit.create({
     name,
     user: currentUserId,
     // description,
@@ -89,23 +74,7 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
     // { startDate: { $lte: date } },
   ];
 
-  // let tagsArray = [];
-  // let tagToFind;
-  // if (tag) {
-  //   console.log("tag:", tag);
-  //   tagToFind = await Tag.findOne({ title: tag });
-  //   // tagsArray = tagsArray.map((tag) => tag._id);
-  //   console.log("tagToFind:", tagToFind);
-  //   // tagToFind = new BSON.ObjectId(  )
-  //   // filterConditions.push({ tags:   });
-  // }
-
   if (date) {
-    // date = new Date(date);
-
-    // nextDate = new Date(date);
-    // nextDate.setDate(nextDate.getDate() + 1);
-
     date = dayjs(date)
       .set("hour", 0)
       .set("minute", 0)
@@ -113,12 +82,6 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
       .set("millisecond", 0);
 
     const weekday = date.get("day");
-
-    // nextDate = dayjs(nextDate)
-    //   .set("hour", 0)
-    //   .set("minute", 0)
-    //   .set("second", 0)
-    //   .set("millisecond", 0);
 
     filterConditions.push({ startDate: { $lte: date } });
     filterConditions.push({ onWeekdays: weekday });
@@ -140,11 +103,6 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
     sortOptions = { name: 1 };
   }
 
-  // let habits = await Habit.find(filterCriteria)
-  //   .sort({ createdAt: -1 })
-  //   .skip(offset)
-  //   .limit(limit)
-  //   .populate("progressList");
   let habits = await Habit.find(filterCriteria)
     .sort(sortOptions)
     .skip(offset)
@@ -172,8 +130,8 @@ habitController.getSingleHabit = catchAsync(async (req, res, next) => {
   const currentUserId = req.userId;
 
   // Validation
-  // let habit = await Habit.findById(habitId);
-  let habit = await Habit.findById(habitId)
+  // const habit = await Habit.findById(habitId);
+  const habit = await Habit.findById(habitId)
     .populate("reminders")
     .populate("progressList")
     .populate("tags")
@@ -196,7 +154,7 @@ habitController.updateSingleHabit = catchAsync(async (req, res, next) => {
   const habitId = req.params.id;
 
   // Validation
-  let habit = await Habit.findById(habitId);
+  const habit = await Habit.findById(habitId);
   if (!habit) {
     throw new AppError(400, "Habit not found", "Update Single Habit error");
   }
@@ -208,44 +166,6 @@ habitController.updateSingleHabit = catchAsync(async (req, res, next) => {
       "Update Single Habit error"
     );
   }
-
-  // console.log("updateSingleHabit be");
-
-  // Process
-  // const allows = [
-  //   "name",
-  //   "description",
-  //   "goal",
-  //   "startDate",
-  //   "duration",
-  //   "progress",
-  //   "onWeekdays",
-  //   "reminders",
-  // ];
-
-  // allows.forEach((field) => {
-  //   console.log(`188 req.body.${field}: ${req.body[field]}`);
-  //   if (!req.body[field]) {
-  //     req.body[field] = habit[field];
-  //   }
-  //   console.log(`192 req.body.${field}: ${req.body[field]}`);
-  // });
-
-  // console.log("195 req.body:", req.body);
-
-  // allows.forEach((field) => {
-  //   if (req.body[field] !== undefined) {
-  //     console.log(`199 req.body.${field}: ${req.body[field]}`);
-  //     if (["onWeekdays", "progress", "reminders"].includes(field)) {
-  //       if (!req.body[field].length) {
-  //         console.log(`214 habit.${field}: ${habit[field]}`);
-  //         req.body[field] = habit[field];
-  //       }
-  //     }
-  //   }
-  //   habit[field] = req.body[field];
-  // });
-  // console.log(`209 habit: ${habit}`);
 
   const { name, description, goal, startDate, duration, progress, onWeekdays } =
     req.body;

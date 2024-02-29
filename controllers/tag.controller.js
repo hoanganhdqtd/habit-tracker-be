@@ -45,7 +45,6 @@ tagController.getTags = catchAsync(async (req, res, next) => {
 tagController.updateSingleTag = catchAsync(async (req, res, next) => {
   // Get data
   const tagId = req.params.id;
-  const currentUserId = req.userId;
   const { title, habitId } = req.body;
 
   // Validation
