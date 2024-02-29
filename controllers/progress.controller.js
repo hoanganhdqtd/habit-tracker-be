@@ -179,7 +179,7 @@ progressController.updateDailyProgress = catchAsync(async (req, res, next) => {
     res,
     200,
     true,
-    progress,
+    { name: habit.name, progress },
     null,
     "Update Daily Progress success"
   );
