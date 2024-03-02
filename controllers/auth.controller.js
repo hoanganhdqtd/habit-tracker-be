@@ -15,43 +15,40 @@ const transporter = nodemailer.createTransport(
 
 const passwordResetCheckSums = {};
 
-// Generate reset token
-const createResetToken = async (userId, expireTime) => {
-  const resetToken = await jwt.sign(
-    { _id: userId },
-    process.env.JWT_SECRET_KEY,
-    {
-      // expiresIn: "1h",
-      expiresIn: expireTime,
-    }
-  );
-  return resetToken;
-};
-
 // Create checksum
-function createChecksum(userId, expireTime, secret) {
-  const checksumString = `${userId}-${expireTime}-${secret}`;
-  const checksum = crypto
-    .createHmac("sha256", process.env.CHECKSUM_SECRET_KEY)
-    .update(checksumString)
-    .digest("hex");
-  passwordResetCheckSums[checksum] = userId;
+async function createChecksum(userId) {
+  console.log("userId:", userId);
+  const expiresIn = 3600; // 3600s
+  const payload = {
+    userId,
+    expires: Date.now() + expiresIn * 1000,
+  };
+  console.log("payload:", payload);
+  // passwordResetCheckSums[checksum] = {
+  //   userId,
+  //   expireTime: Date.now() + 3600000,
+  // };
+  const token = await jwt.sign(payload, process.env.JWT_SECRET_KEY);
+  const checksum = crypto.createHash("sha256").update(token).digest("hex");
+
+  passwordResetCheckSums[checksum] = { userId, token };
+  console.log("passwordResetCheckSums:", passwordResetCheckSums);
   return checksum;
 }
 
-// Verify checksum
-async function verifyChecksum(userId, expireTime, resetToken, checksum) {
-  console.log("passwordResetCheckSums:", passwordResetCheckSums);
-  console.log("resetToken:", resetToken);
-  console.log("checksum:", checksum);
+// Verify token
+async function verifyChecksum(checksum) {
+  console.log("checksum to verify:", checksum);
   try {
-    const decoded = await jwt.verify(resetToken, process.env.JWT_SECRET_KEY);
-    // The token is valid
-    const newChecksum = createChecksum(userId, expireTime, resetToken);
-    console.log("newChecksum:", newChecksum);
-    return decoded && newChecksum === checksum;
-  } catch (err) {
-    console.log("error:", err);
+    // Retrieve the stored userId and token from the passwordResetCheckSums
+    const { userId, token } = passwordResetCheckSums[checksum];
+
+    await jwt.verify(token, process.env.JWT_SECRET_KEY);
+    // const decoded = await jwt.verify(token, process.env.JWT_SECRET_KEY);
+    // console.log("decoded:", decoded);
+    return true;
+  } catch (error) {
+    return false;
   }
 }
 
@@ -103,10 +100,12 @@ authController.forgotPassword = catchAsync(async (req, res, next) => {
 
   // Process
   // const expireTime = Date.now() + 3600000; // 1h
-  const expireTime = "1h";
-  const resetToken = await createResetToken(user._id, 60);
-  // console.log("forgotPassword resetToken:", resetToken);
-  const checksum = createChecksum(user._id, expireTime, resetToken);
+  // const expireTime = "1h";
+  // const resetToken = await createResetToken(user._id, 60);
+  // // console.log("forgotPassword resetToken:", resetToken);
+  // const checksum = createChecksum(user._id, expireTime, resetToken);
+
+  const checksum = await createChecksum(user._id.toString());
   const resetPasswordLink = `${process.env.DEPLOY_URL}/reset-password?checksum=${checksum}`;
 
   // Send email
@@ -141,17 +140,13 @@ authController.forgotPassword = catchAsync(async (req, res, next) => {
 authController.resetPassword = catchAsync(async (req, res, next) => {
   // Get data
   const { checksum, newPassword } = req.body;
-  // console.log("checksum:", checksum);
-  // console.log("newPassword:", newPassword);
+  console.log("checksum:", checksum);
+  console.log("newPassword:", newPassword);
 
   // Validation
-  const userId = passwordResetCheckSums[checksum];
-  const expireTime = "1h";
-  const resetToken = await createResetToken(userId, 60);
-  // console.log("resetPassword resetToken:", resetToken);
-
-  // console.log("resetPassword userId:", userId);
-
+  console.log("passwordResetCheckSums:", passwordResetCheckSums);
+  const { userId } = passwordResetCheckSums[checksum];
+  console.log("userId:", userId);
   let user = await User.findOne({ _id: userId });
   if (!user) {
     throw new AppError(
@@ -162,13 +157,8 @@ authController.resetPassword = catchAsync(async (req, res, next) => {
   }
 
   // Verify checksum
-  const isChecksumValid = verifyChecksum(
-    userId,
-    expireTime,
-    // process.env.CHECKSUM_SECRET_KEY,
-    resetToken,
-    checksum
-  );
+  const isChecksumValid = await verifyChecksum(checksum);
+  console.log("isChecksumValid:", isChecksumValid);
 
   if (!isChecksumValid) {
     throw new AppError(400, "Checksum invalid", "Reset Password error");
