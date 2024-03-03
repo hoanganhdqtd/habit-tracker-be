@@ -42,11 +42,4 @@ router.get("/me", authentication.loginRequired, userController.getCurrentUser);
  */
 router.put("/me", authentication.loginRequired, userController.updateProfile);
 
-/**
- * @route PUT /users
- * @description reset password
- * @body { email, password }
- */
-router.put("/", userController.resetPassword);
-
 module.exports = router;

@@ -17,28 +17,38 @@ const passwordResetCheckSums = {};
 
 // Create checksum
 async function createChecksum(userId) {
-  console.log("userId:", userId);
-  const expiresIn = 3600; // 3600s
-  const payload = {
-    userId,
-    expires: Date.now() + expiresIn * 1000,
-  };
-  console.log("payload:", payload);
-  // passwordResetCheckSums[checksum] = {
-  //   userId,
-  //   expireTime: Date.now() + 3600000,
-  // };
-  const token = await jwt.sign(payload, process.env.JWT_SECRET_KEY);
+  const token = await jwt.sign({ _id: userId }, process.env.JWT_SECRET_KEY, {
+    expiresIn: "1h",
+  });
   const checksum = crypto.createHash("sha256").update(token).digest("hex");
 
+  const expiredChecksums = [];
+
+  for (const existingChecksum in passwordResetCheckSums) {
+    const { userId: checksumUserId } = passwordResetCheckSums[existingChecksum];
+
+    // Check if any existing checksums expire or correspond to the same userId
+    const isChecksumValid = await verifyChecksum(existingChecksum);
+
+    if (!isChecksumValid || checksumUserId === userId) {
+      // Add expired checksums to remove later
+      expiredChecksums.push(existingChecksum);
+    }
+  }
+
+  // Remove expired checksums
+  expiredChecksums.forEach((checksum) => {
+    delete passwordResetCheckSums[checksum];
+  });
+
   passwordResetCheckSums[checksum] = { userId, token };
-  console.log("passwordResetCheckSums:", passwordResetCheckSums);
+
   return checksum;
 }
 
 // Verify token
 async function verifyChecksum(checksum) {
-  console.log("checksum to verify:", checksum);
+  // console.log("checksum to verify:", checksum);
   try {
     // Retrieve the stored userId and token from the passwordResetCheckSums
     const { userId, token } = passwordResetCheckSums[checksum];
@@ -99,12 +109,6 @@ authController.forgotPassword = catchAsync(async (req, res, next) => {
   }
 
   // Process
-  // const expireTime = Date.now() + 3600000; // 1h
-  // const expireTime = "1h";
-  // const resetToken = await createResetToken(user._id, 60);
-  // // console.log("forgotPassword resetToken:", resetToken);
-  // const checksum = createChecksum(user._id, expireTime, resetToken);
-
   const checksum = await createChecksum(user._id.toString());
   const resetPasswordLink = `${process.env.DEPLOY_URL}/reset-password?checksum=${checksum}`;
 
@@ -113,7 +117,7 @@ authController.forgotPassword = catchAsync(async (req, res, next) => {
     from: process.env.SENDER_EMAIL,
     to: email,
     subject: "Password Reset",
-    html: `Click the following link to reset your password: ${resetPasswordLink}`,
+    html: `Click the following link to reset your password: ${resetPasswordLink}.\nThis link only works in <b>1h</b>.`,
   };
 
   transporter.sendMail(mailOptions, (err, response) => {
@@ -140,13 +144,17 @@ authController.forgotPassword = catchAsync(async (req, res, next) => {
 authController.resetPassword = catchAsync(async (req, res, next) => {
   // Get data
   const { checksum, newPassword } = req.body;
-  console.log("checksum:", checksum);
-  console.log("newPassword:", newPassword);
 
   // Validation
-  console.log("passwordResetCheckSums:", passwordResetCheckSums);
+
+  // Verify checksum
+  const isChecksumValid = await verifyChecksum(checksum);
+  if (!isChecksumValid) {
+    delete passwordResetCheckSums[checksum];
+    throw new AppError(400, "Checksum invalid", "Reset Password error");
+  }
+
   const { userId } = passwordResetCheckSums[checksum];
-  console.log("userId:", userId);
   let user = await User.findOne({ _id: userId });
   if (!user) {
     throw new AppError(
@@ -156,21 +164,13 @@ authController.resetPassword = catchAsync(async (req, res, next) => {
     );
   }
 
-  // Verify checksum
-  const isChecksumValid = await verifyChecksum(checksum);
-  console.log("isChecksumValid:", isChecksumValid);
-
-  if (!isChecksumValid) {
-    throw new AppError(400, "Checksum invalid", "Reset Password error");
-  }
+  // Remove the used reset checksum
+  delete passwordResetCheckSums[checksum];
 
   // Process
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(newPassword, salt);
   await user.save();
-
-  // Remove the used reset checksum
-  delete passwordResetCheckSums[checksum];
 
   const accessToken = await user.generateToken();
 

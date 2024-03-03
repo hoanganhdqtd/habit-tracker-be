@@ -89,34 +89,4 @@ userController.updateProfile = catchAsync(async (req, res, next) => {
   return sendResponse(res, 200, true, user, null, "Update Profile success");
 });
 
-userController.resetPassword = catchAsync(async (req, res, next) => {
-  // Get data
-  const { email, newPassword } = req.body;
-
-  // Validation
-  const user = await User.findOne({ email });
-  if (!user) {
-    throw new AppError(400, "User not found", "Reset Password error");
-  }
-
-  // Process
-  const salt = await bcrypt.genSalt(10);
-  user.password = await bcrypt.hash(newPassword, salt);
-  // Save updated password
-  await user.save();
-
-  // Create JWT access token
-  const accessToken = await user.generateToken();
-
-  // Send response
-  return sendResponse(
-    res,
-    200,
-    true,
-    { user, accessToken },
-    null,
-    "Reset Password success"
-  );
-});
-
 module.exports = userController;
