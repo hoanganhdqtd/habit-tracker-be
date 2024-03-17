@@ -29,7 +29,8 @@ app.use(express.static(path.join(__dirname, "public")));
 // app.use(cors());
 app.use(
   cors({
-    origin: process.env.DEPLOY_URL,
+    // origin: process.env.DEPLOY_URL,
+    origin: "https://habit-tracker-968909.netlify.app",
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   })
