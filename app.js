@@ -27,13 +27,13 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 // app.use(cors());
-app.use(
-  cors({
-    origin: process.env.DEPLOY_URL,
-    methods: "GET,POST,PUT,DELETE",
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: process.env.DEPLOY_URL,
+//     methods: "GET,POST,PUT,DELETE",
+//     credentials: true,
+//   })
+// );
 
 // app.use((req, res, next) => {
 //   res.setHeader("Access-Control-Allow-Origin", process.env.DEPLOY_URL);
@@ -52,6 +52,24 @@ app.use(
 
 //   next();
 // });
+
+// CORS middleware
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    if (process.env.DEPLOY_URL === origin) {
+      return callback(null, true);
+    } else {
+      return callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: "GET,POST,PUT,DELETE",
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 const mongoURI = process.env.MONGODB_URI;
 mongoose
@@ -144,12 +162,6 @@ app.get("/google-login/success", async (req, res) => {
   if (!req.user) {
     throw new AppError(400, "Not authorized", "Google Login error");
   }
-
-  // Set CORS headers
-  res.setHeader("Access-Control-Allow-Origin", process.env.DEPLOY_URL);
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.setHeader("Access-Control-Allow-Credentials", true);
 
   // return data from req.user
   return sendResponse(
