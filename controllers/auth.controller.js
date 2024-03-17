@@ -48,14 +48,10 @@ async function createChecksum(userId) {
 
 // Verify token
 async function verifyChecksum(checksum) {
-  // console.log("checksum to verify:", checksum);
   try {
     // Retrieve the stored userId and token from the passwordResetCheckSums
     const { userId, token } = passwordResetCheckSums[checksum];
-
     await jwt.verify(token, process.env.JWT_SECRET_KEY);
-    // const decoded = await jwt.verify(token, process.env.JWT_SECRET_KEY);
-    // console.log("decoded:", decoded);
     return true;
   } catch (error) {
     return false;
@@ -82,10 +78,8 @@ authController.loginWithEmail = catchAsync(async (req, res, next) => {
     throw new AppError(400, "Wrong password", "Login error");
   }
 
-  // Create JWT token
+  // create JWT token
   const accessToken = await user.generateToken();
-
-  // console.log("accessToken:", accessToken);
 
   // Response
   sendResponse(

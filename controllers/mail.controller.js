@@ -1,6 +1,5 @@
 const nodemailer = require("nodemailer");
 const sendgridTransport = require("nodemailer-sendgrid-transport");
-// const cron = require("node-cron");
 
 const Habit = require("../models/Habit");
 const { catchAsync, sendResponse, AppError } = require("../helpers/utils");
@@ -40,18 +39,6 @@ mailController.scheduleTasks = catchAsync(async (req, res, next) => {
 
   habits.forEach((habit) => {
     habit.reminders.forEach(async (reminder) => {
-      // const cronExpression = `${dayjs(reminder.time).minute()} ${dayjs(
-      //   reminder.time
-      // ).hour()} * * *`;
-      // console.log("cronExpression:", cronExpression);
-
-      // cron.schedule(cronExpression, async () => {
-      //   // Check if the reminder is ongoing
-      //   if (reminder.status === "ongoing") {
-      //     // Send notification
-      //     await sendNotification(habit);
-      //   }
-      // });
       if (
         dayjs(reminder.time).isSame(dayjs(Date.now()), "minute") &&
         reminder.status === "ongoing"
@@ -91,7 +78,6 @@ mailController.sendResetPasswordEmail = catchAsync(async (req, res, next) => {
     res,
     200,
     true,
-    // mailOptions,
     null,
     null,
     "Send Reset Password Email success"

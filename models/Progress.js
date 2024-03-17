@@ -9,8 +9,6 @@ const progressSchema = Schema(
       enum: ["completed", "incomplete"],
       required: true,
     },
-    // duration: { type: Number, required: true },
-    // progressValue: { type: Number, required: true },
     date: { type: Date, required: true },
     habit: { type: Schema.Types.ObjectId, required: true, ref: "Habit" },
   },

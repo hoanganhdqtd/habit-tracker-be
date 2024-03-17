@@ -8,7 +8,6 @@ var session = require("express-session");
 
 var mongoose = require("mongoose");
 
-const authController = require("./controllers/auth.controller");
 const mailController = require("./controllers/mail.controller");
 const User = require("./models/User");
 
@@ -18,8 +17,6 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const { sendResponse, AppError } = require("./helpers/utils");
 
 const cron = require("node-cron");
-
-// const nodemailer = require("nodemailer");
 
 var app = express();
 
@@ -43,8 +40,7 @@ mongoose
   .connect(mongoURI)
   .then(() => {
     console.log("DB connected successfully");
-    // Schedule email tasks
-    // mailController.scheduleTasks();
+    // Set email tasks schedule
     cron.schedule("* * * * *", mailController.scheduleTasks);
   })
   .catch((err) => console.log(err));
@@ -58,15 +54,9 @@ passport.use(
       // Authorized redirect URIs from Google OAuth2 setting
       callbackURL: process.env.GOOGLE_CALLBACK_URL,
 
-      // userInfo fields: name (full name), email, picture (AvatarUrl)
-      // https://developers.google.com/identity/protocols/oauth2/scopes
-      // userProfile: "https://www.googleapis.com/oauth2/v2/userinfo",
       userProfile: "https://www.googleapis.com/oauth2/v3/userinfo",
     },
     async (accessToken, refreshToken, profile, cb) => {
-      // console.log("Google accessToken:", accessToken);
-      // console.log("Google profile:", profile);
-
       try {
         const email = profile.emails[0].value;
         const name = profile.displayName;
@@ -83,7 +73,6 @@ passport.use(
         const JWT_accessToken = await user.generateToken();
         user.googleId = profile.id;
         await user.save();
-        // console.log("loginWithGoogle user:", user);
 
         return cb(null, { user, accessToken: JWT_accessToken }); // null: no err
       } catch (err) {
@@ -101,7 +90,6 @@ passport.deserializeUser((obj, done) => {
   done(null, obj);
 });
 
-// app.use(session({ … }));
 app.use(
   session({
     secret: process.env.GOOGLE_CLIENT_SECRET,
@@ -114,7 +102,6 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
-// app.use(passport.authenticate("session"));
 
 app.get(
   "/auth/google",
@@ -126,26 +113,21 @@ app.get(
 app.get(
   "/auth/google/habit-tracker",
   passport.authenticate("google", {
-    // successRedirect: "/",
-    // successRedirect: `${process.env.DEPLOY_URL}/google-login`,
     failureRedirect: `${process.env.DEPLOY_URL}/login`,
   }),
   function (req, res) {
-    // Successful authentication, redirect home.
-    // console.log("req:", req);
-    // serialized user returned by req.user
-    // console.log("Authenticated user:", req.user);
+    // Successful authentication, redirect
     res.redirect(`${process.env.DEPLOY_URL}/google-login`);
   }
 );
 
 // To get data from Google account
 app.get("/google-login/success", async (req, res) => {
-  // console.log("google-login-success req.user:", req.user);
   if (!req.user) {
     throw new AppError(400, "Not authorized", "Google Login error");
   }
 
+  // return data from req.user
   return sendResponse(
     res,
     200,

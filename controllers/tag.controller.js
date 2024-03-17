@@ -15,11 +15,6 @@ tagController.createTag = catchAsync(async (req, res, next) => {
   // Validation
   // Process
   const newTag = await Tag.create({ title, user: currentUserId });
-  // if (habitId) {
-  //   newTag.habits.push(habitId);
-  // }
-
-  // await newTag.save();
 
   // Send response
   return sendResponse(res, 200, true, newTag, null, "Create Tag success");
@@ -93,12 +88,11 @@ tagController.deleteSingleTag = catchAsync(async (req, res, next) => {
     throw new AppError(400, "Tag not found", "Delete Single Tag error");
   }
 
-  // find habits with the deleted tag
+  // find habits which have the deleted tag
   const habits = await Habit.find({ tags: { $in: [tagId] } });
-  // console.log("habits:", habits);
+
   habits.forEach(async (habit) => {
     habit.tags = habit.tags.filter((tag) => tag.equals(tagId));
-    // console.log("habit.tags:", habit.tags);
     await habit.save();
   });
 
@@ -123,7 +117,6 @@ tagController.addHabitTag = catchAsync(async (req, res, next) => {
   const { title } = req.body;
   const newTag = await Tag.create({
     title,
-    // habitId
     user: currentUserId,
   });
 

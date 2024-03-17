@@ -6,17 +6,6 @@ const Schema = mongoose.Schema;
 const jwt = require("jsonwebtoken");
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
-// const userSchema = Schema(
-//   {
-//     name: { type: String, required: true },
-//     email: { type: String, required: true, unique: true },
-//     password: { type: String, required: true, select: false },
-
-//     avatarUrl: { type: String, default: "" },
-//   },
-//   { timestamps: true }
-// );
-
 const userSchema = new Schema(
   {
     name: { type: String, required: true },
@@ -24,7 +13,7 @@ const userSchema = new Schema(
     password: { type: String, required: true, select: false },
 
     avatarUrl: { type: String, default: "" },
-    googleId: { type: String, required: false, unique: true },
+    googleId: { type: String, unique: true },
   },
   { timestamps: true }
 );

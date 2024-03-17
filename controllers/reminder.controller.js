@@ -23,7 +23,6 @@ reminderController.createHabitReminder = catchAsync(async (req, res, next) => {
 
   // check if onWeekdays is input by the user
   if (onWeekdays && onWeekdays.length) {
-    // console.log("onWeekdays:", onWeekdays);
     newReminder.onWeekdays = onWeekdays.sort((a, b) => a - b);
   } else {
     newReminder.onWeekdays = Array.from({ length: 7 }, (value, index) => index);
@@ -145,8 +144,6 @@ reminderController.deleteHabitSingleReminder = catchAsync(
       (elementId) => elementId !== reminderId
     );
 
-    // remove reminderId from habit's reminders array
-    // habit.reminders.splice(reminderIndex, 1);
     await habit.save();
 
     // Send response

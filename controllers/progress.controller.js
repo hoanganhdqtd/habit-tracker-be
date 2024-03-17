@@ -74,7 +74,6 @@ progressController.addNewDailyProgress = catchAsync(async (req, res, next) => {
   let newProgress = await Progress.create({
     status,
     date,
-    // habitId
     habit: habitId,
   });
 
@@ -123,11 +122,8 @@ progressController.getSingleProgress = catchAsync(async (req, res, next) => {
 // PUT progress/habit/:habitId
 progressController.updateDailyProgress = catchAsync(async (req, res, next) => {
   // Get data
-  // const { progressId, habitId } = req.params;
   const { habitId } = req.params;
   const { date, status } = req.body;
-
-  // const habitId = req.params.habitId;
 
   // Validation
   const habit = await Habit.findById(habitId);
@@ -135,28 +131,13 @@ progressController.updateDailyProgress = catchAsync(async (req, res, next) => {
     throw new AppError(400, "Habit not found", "Update Daily Progress error");
   }
 
-  // let progress = await Progress.findById(progressId);
   let progress = await Progress.findOne({ habit: habitId, date });
-
-  // let progress = await Progress.updateOne(
-  //   { _id: progressId },
-  //   { $set: { status } }
-  // );
-
-  // let progress = await Progress.updateOne(
-  //   { habit: habitId, date },
-  //   { $set: { status } }
-  // );
-
-  // progress.status = status;
-  // await progress.save();
 
   // Process
   if (!progress) {
     progress = await Progress.create({
       status,
       date,
-      // habitId
       habit: habitId,
     });
     habit.progressList.push(progress._id);

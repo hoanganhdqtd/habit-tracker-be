@@ -10,15 +10,7 @@ const habitController = {};
 habitController.createHabit = catchAsync(async (req, res, next) => {
   // Get data
   const currentUserId = req.userId;
-  const {
-    name,
-    description,
-    goal,
-    startDate,
-    duration,
-    onWeekdays,
-    // reminders,
-  } = req.body;
+  const { name, description, goal, startDate, duration, onWeekdays } = req.body;
 
   // Validation
 
@@ -26,12 +18,9 @@ habitController.createHabit = catchAsync(async (req, res, next) => {
   const habit = await Habit.create({
     name,
     user: currentUserId,
-    // description,
     goal,
     startDate,
     duration,
-    // onWeekdays,
-    // reminders: habitReminders,
   });
 
   if (description) {
@@ -39,7 +28,6 @@ habitController.createHabit = catchAsync(async (req, res, next) => {
   }
 
   if (onWeekdays && onWeekdays.length) {
-    // console.log("onWeekdays:", onWeekdays);
     habit.onWeekdays = onWeekdays.sort((a, b) => a - b);
   } else {
     habit.onWeekdays = Array.from({ length: 7 }, (value, index) => index);
@@ -65,13 +53,11 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
   limit = parseInt(limit) || 10;
   search = search || "";
   tag = tag || "";
-  // let nextDate;
 
   const filterConditions = [
     { user: currentUserId },
     { name: { $regex: search, $options: "i" } },
     { name: { $regex: tag, $options: "i" } },
-    // { startDate: { $lte: date } },
   ];
 
   if (date) {
@@ -109,8 +95,6 @@ habitController.getHabits = catchAsync(async (req, res, next) => {
     .limit(limit)
     .populate("progressList");
 
-  // console.log("habits:", habits);
-
   // Send response
   return sendResponse(
     res,
@@ -130,7 +114,6 @@ habitController.getSingleHabit = catchAsync(async (req, res, next) => {
   const currentUserId = req.userId;
 
   // Validation
-  // const habit = await Habit.findById(habitId);
   const habit = await Habit.findById(habitId)
     .populate("reminders")
     .populate("progressList")
