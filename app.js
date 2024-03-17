@@ -163,6 +163,20 @@ app.get("/google-login/success", async (req, res) => {
     throw new AppError(400, "Not authorized", "Google Login error");
   }
 
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    "https://habit-tracker-968909.netlify.app"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "X-Requested-With,content-type"
+  );
+  res.setHeader("Access-Control-Allow-Credentials", true);
+
   // return data from req.user
   return sendResponse(
     res,
