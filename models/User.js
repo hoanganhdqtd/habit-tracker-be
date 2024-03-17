@@ -24,7 +24,7 @@ const userSchema = new Schema(
     password: { type: String, required: true, select: false },
 
     avatarUrl: { type: String, default: "" },
-    googleId: { type: String, unique: true },
+    googleId: { type: String, required: false, unique: true },
   },
   { timestamps: true }
 );
