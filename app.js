@@ -34,9 +34,7 @@ app.use(express.static(path.join(__dirname, "public")));
 //     credentials: true,
 //   })
 // );
-const express = require("express");
-const app = express();
-// Set middleware of CORS
+
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", process.env.DEPLOY_URL);
   res.setHeader(
