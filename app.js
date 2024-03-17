@@ -145,6 +145,12 @@ app.get("/google-login/success", async (req, res) => {
     throw new AppError(400, "Not authorized", "Google Login error");
   }
 
+  // Set CORS headers
+  res.setHeader("Access-Control-Allow-Origin", process.env.DEPLOY_URL);
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Credentials", true);
+
   // return data from req.user
   return sendResponse(
     res,
