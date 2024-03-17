@@ -27,49 +27,13 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 // app.use(cors());
-// app.use(
-//   cors({
-//     origin: process.env.DEPLOY_URL,
-//     methods: "GET,POST,PUT,DELETE",
-//     credentials: true,
-//   })
-// );
-
-// app.use((req, res, next) => {
-//   res.setHeader("Access-Control-Allow-Origin", process.env.DEPLOY_URL);
-//   res.setHeader(
-//     "Access-Control-Allow-Methods",
-//     "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS,CONNECT,TRACE"
-//   );
-//   res.setHeader(
-//     "Access-Control-Allow-Headers",
-//     "Content-Type, Authorization, X-Content-Type-Options, Accept, X-Requested-With, Origin, Access-Control-Request-Method, Access-Control-Request-Headers"
-//   );
-//   res.setHeader("Access-Control-Allow-Credentials", true);
-//   res.setHeader("Access-Control-Allow-Private-Network", true);
-//   //  Firefox caps this at 24 hours (86400 seconds). Chromium (starting in v76) caps at 2 hours (7200 seconds). The default value is 5 seconds.
-//   res.setHeader("Access-Control-Max-Age", 7200);
-
-//   next();
-// });
-
-// CORS middleware
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-
-    if (process.env.DEPLOY_URL === origin) {
-      return callback(null, true);
-    } else {
-      return callback(new Error("Not allowed by CORS"));
-    }
-  },
-  methods: "GET,POST,PUT,DELETE",
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
+app.use(
+  cors({
+    origin: process.env.DEPLOY_URL,
+    methods: "GET,POST,PUT,DELETE",
+    credentials: true,
+  })
+);
 
 const mongoURI = process.env.MONGODB_URI;
 mongoose
@@ -77,7 +41,7 @@ mongoose
   .then(() => {
     console.log("DB connected successfully");
     // Set email tasks schedule
-    cron.schedule("* * * * *", mailController.scheduleTasks);
+    cron.schedule("* * * * *", mailController.mailer);
   })
   .catch((err) => console.log(err));
 
@@ -106,11 +70,11 @@ passport.use(
             // googleId: profile.id,
           });
         }
-        const JWT_accessToken = await user.generateToken();
+        const jwtAccessToken = await user.generateToken();
         user.googleId = profile.id;
         await user.save();
 
-        return cb(null, { user, accessToken: JWT_accessToken }); // null: no err
+        return cb(null, { user, accessToken: jwtAccessToken }); // null: no err
       } catch (err) {
         return cb(err, null);
       }
@@ -162,20 +126,6 @@ app.get("/google-login/success", async (req, res) => {
   if (!req.user) {
     throw new AppError(400, "Not authorized", "Google Login error");
   }
-
-  res.setHeader(
-    "Access-Control-Allow-Origin",
-    "https://habit-tracker-968909.netlify.app"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, OPTIONS, PUT, PATCH, DELETE"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "X-Requested-With,content-type"
-  );
-  res.setHeader("Access-Control-Allow-Credentials", true);
 
   // return data from req.user
   return sendResponse(

@@ -8,12 +8,12 @@ const validators = require("../middlewares/validators");
 
 /**
  * @route POST /mail
- * @description create an email notification
+ * @description send email notifications
  * @body { }
  * @access Public
  */
 const mailController = require("../controllers/mail.controller");
 
-router.post("/", mailController.scheduleTasks);
+router.post("/", mailController.mailer);
 
 module.exports = router;
