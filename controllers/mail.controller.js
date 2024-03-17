@@ -34,7 +34,7 @@ const sendNotification = async (habit) => {
   });
 };
 
-mailController.mailer = catchAsync(async (req, res, next) => {
+mailController.notificationMailer = catchAsync(async (req, res, next) => {
   const habits = await Habit.find().populate("user").populate("reminders");
 
   habits.forEach((habit) => {

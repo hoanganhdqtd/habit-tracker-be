@@ -41,7 +41,7 @@ mongoose
   .then(() => {
     console.log("DB connected successfully");
     // Set email tasks schedule
-    cron.schedule("* * * * *", mailController.mailer);
+    cron.schedule("* * * * *", mailController.notificationMailer);
   })
   .catch((err) => console.log(err));
 
