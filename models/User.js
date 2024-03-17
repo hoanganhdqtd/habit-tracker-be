@@ -10,8 +10,7 @@ const userSchema = new Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true, select: false },
-
+    password: { type: String, select: false },
     avatarUrl: { type: String, default: "" },
     googleId: { type: String, unique: true },
   },

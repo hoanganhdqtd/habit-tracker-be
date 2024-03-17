@@ -22,7 +22,7 @@ router.post(
       .bail()
       .isEmail()
       .normalizeEmail({ gmail_remove_dots: false }),
-    body("password", "Invalid password").exists().bail().notEmpty(),
+    // body("password", "Invalid password").exists().bail().notEmpty(),
   ]),
   userController.register
 );

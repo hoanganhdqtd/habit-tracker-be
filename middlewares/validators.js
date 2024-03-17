@@ -21,7 +21,6 @@ validators.validate = (validationArray) => async (req, res, next) => {
     .map((err) => err.msg)
     .join(" & ");
 
-  // return sendResponse(res, 422, false, null, "Validation Error", { message });
   return sendResponse(res, 422, false, null, { message }, "Validation Error");
 };
 
