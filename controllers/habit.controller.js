@@ -2,6 +2,8 @@ const dayjs = require("dayjs");
 const { catchAsync, sendResponse, AppError } = require("../helpers/utils");
 
 const Habit = require("../models/Habit");
+const Reminder = require("../models/Reminder");
+const Progress = require("../models/Progress");
 
 const habitController = {};
 
@@ -202,19 +204,24 @@ habitController.deleteSingleHabit = catchAsync(async (req, res, next) => {
   const habitId = req.params.id;
 
   // Validation
-  const habit = await Habit.findOneAndDelete({
-    _id: habitId,
-    user: currentUserId,
-  });
+  const habit = await Habit.findById(habitId);
   if (!habit) {
-    throw new AppError(
-      400,
-      "Habit not found or User not authorized",
-      "Delete Single Habit error"
-    );
+    throw new AppError(400, "Habit not found", "Delete Single Habit error");
   }
 
   // Process
+  // Delete all reminders of the habit
+  habit.reminders.forEach(async (reminderId) => {
+    await Reminder.findByIdAndDelete(reminderId);
+  });
+
+  // Delete all progresses of the habit
+  habit.progressList.forEach(async (progressId) => {
+    await Progress.findByIdAndDelete(progressId);
+  });
+
+  // Delete the habit
+  await Habit.findByIdAndDelete(habit);
 
   // Send response
   return sendResponse(
